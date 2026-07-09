@@ -73,4 +73,16 @@
          enabled:hover:bg-[var(--color-hover-bg)] enabled:hover:border-[var(--color-hover-border)]
          enabled:active:bg-[var(--color-active-bg)] enabled:active:border-[var(--color-active-border)];
   }
+  .shiki code {
+    counter-reset: line;
+  }
+  .shiki code .line::before {
+    counter-increment: line;
+    content: counter(line);
+    display: inline-block;
+    width: 2em;
+    margin-right: 1em;
+    text-align: right;
+    color: var(--color-border-soft);
+  }
 }
