@@ -1,7 +1,7 @@
 import { createSignal, createResource, For, Show } from "solid-js";
 import NavBar from "../components/NavBar";
 import Button from "../components/Button";
-import CodeBlock from "../components/CodeBlock";
+
 import MonacoEditor from "../components/MonacoEditor";
 import pb from "../lib/pb";
 
@@ -163,7 +163,7 @@ export default function Snippets() {
                  </div>
                </div>
               <Show when={s.snippet}>
-                <CodeBlock code={s.snippet} lang={s.lang} />
+                <MonacoEditor value={s.snippet} lang={s.lang} readOnly />
               </Show>
              </li>
            

@@ -2,6 +2,8 @@
 // Thin SolidJS wrapper around monaco-editor. Mounts a single editor
 // instance on the container div and keeps it in sync with props.value
 // and props.lang. Edits are reported back via props.onChange(newValue).
+// When props.readOnly is true, the editor is used purely for preview
+// (used by Snippets.jsx's list instead of the old Shiki-based CodeBlock).
 import { onMount, onCleanup, createEffect } from "solid-js";
 import * as monaco from "monaco-editor";
 import "../lib/monacoWorkers";
@@ -23,6 +25,8 @@ export default function MonacoEditor(props) {
       automaticLayout: true,
       minimap: { enabled: false },
       fontSize: 13,
+      readOnly: props.readOnly ?? false,
+      domReadOnly: props.readOnly ?? false,
     });
 
     editor.onDidChangeModelContent(() => {
