@@ -6,7 +6,7 @@
 
 <img src="frontend/public/favicon.svg" width="100" align="right" />
 
-- このプロジェクトの目的は、汎用的な目的に使えるテンプレートとなるリポジトリをつくることです。
+- このアプリは、ソフトウェア開発技能を効率的に習得することを目的としたスニペットマネージャです。
 - このアプリは、SPA＋CSRの個人向けのアプリです。
 - バックエンドはGo+PocketBase **v0.39+**、frontendは、solid.js + **tailwind v4**で書かれています。
 
