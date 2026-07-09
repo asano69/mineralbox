@@ -13,7 +13,7 @@ export function getHighlighter() {
       themes: [import("shiki/themes/github-dark.mjs")],
       langs: [
         import("shiki/langs/go.mjs"),
-        import("shiki/langs/javascript.mjs"),
+        import("shiki/langs/jsx.mjs"),
         import("shiki/langs/sql.mjs"),
       ],
       // No WASM engine needed, which keeps the setup simpler.
