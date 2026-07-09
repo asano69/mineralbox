@@ -8,7 +8,7 @@ import "./style.css";
 import Home from "./routes/Home";
 import Settings from "./routes/Settings";
 import Login from "./routes/Login";
-
+import Snippets from "./routes/Snippets";
 import pb from "./lib/pb";
 
 // AuthGate blocks the whole app behind Login until a valid superuser
@@ -31,6 +31,7 @@ render(
     <AuthGate>
       <Router>
         <Route path="/" component={Home} />
+        <Route path="/snippets" component={Snippets} />
         <Route path="/settings" component={Settings} />
       </Router>
     </AuthGate>
