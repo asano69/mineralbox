@@ -4,8 +4,8 @@ package serve
 
 import (
 	"fmt"
-	"github.com/asano69/myapp/internal/assets"
-	"github.com/asano69/myapp/internal/config"
+	"github.com/asano69/mineralbox/internal/assets"
+	"github.com/asano69/mineralbox/internal/config"
 	"io/fs"
 	"net/http"
 

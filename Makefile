@@ -1,4 +1,11 @@
-BINARY := myapp
+BINARY := mineralbox
+
+init:
+	fastmod --hidden myapp $(shell basename $$PWD)
+	find . -type f -name '*myapp*' | while read -r f; do \
+		mv -- "$$f" "$${f//myapp/$(notdir $(CURDIR))}"; \
+	done
+
 
 .PHONY: frontend-deps
 frontend-deps:
@@ -20,7 +27,7 @@ kill-ports:
 
 .PHONY: server
 server: kill-ports build
-	#./myapp migrate up --dir=pb_data
+	#./mineralbox migrate up --dir=pb_data
 	./$(BINARY) superuser upsert admin@mail.internal password --dir=pb_data
 	./$(BINARY) serve
 
@@ -45,7 +52,7 @@ test:
 
 
 migrate-collections:
-	go run ./cmd/myapp migrate collections
+	go run ./cmd/mineralbox migrate collections
 
 
 

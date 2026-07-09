@@ -1,4 +1,4 @@
-// Package errs provides the standard error type for myapp.
+// Package errs provides the standard error type for mineralbox.
 package errs
 
 import "fmt"

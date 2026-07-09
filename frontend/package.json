@@ -1,5 +1,5 @@
 {
-  "name": "myapp-frontend",
+  "name": "mineralbox-frontend",
   "private": true,
   "type": "module",
   "scripts": {
