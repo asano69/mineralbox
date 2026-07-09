@@ -916,7 +916,7 @@ func init() {
 						"type": "select",
 						"values": [
 							"go",
-							"jsx",
+							"javascript",
 							"sql"
 						]
 					},

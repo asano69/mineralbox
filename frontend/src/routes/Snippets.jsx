@@ -2,9 +2,10 @@ import { createSignal, createResource, For, Show } from "solid-js";
 import NavBar from "../components/NavBar";
 import Button from "../components/Button";
 import CodeBlock from "../components/CodeBlock";
+import MonacoEditor from "../components/MonacoEditor";
 import pb from "../lib/pb";
 
-const LANGS = ["go", "jsx", "sql"];
+const LANGS = ["go", "javascript", "sql"];
 
 // Empty form state, also used to reset after create/cancel/delete.
 const emptyForm = () => ({
@@ -108,13 +109,11 @@ export default function Snippets() {
         >
           <For each={LANGS}>{(l) => <option value={l}>{l}</option>}</For>
         </select>
-        <textarea
-          placeholder="Snippet"
-          value={form().snippet}
-          onInput={(e) => setForm({ ...form(), snippet: e.target.value })}
-          rows="6"
-          class="rounded-md border border-[var(--color-border-soft)] bg-[var(--color-field)] px-3 py-2 font-mono text-sm"
-        />
+  <MonacoEditor
+  value={form().snippet}
+  lang={form().lang}
+  onChange={(v) => setForm({ ...form(), snippet: v })}
+/>
         <textarea
           placeholder="Note"
           value={form().note}
