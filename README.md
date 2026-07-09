@@ -18,3 +18,4 @@
 ### Prior Art
 - https://deepwiki.com/snibox/snibox
 - https://deepwiki.com/MohamedElashri/snipo
+- https://deepwiki.com/jordan-dalby/ByteStash
