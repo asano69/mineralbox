@@ -1,6 +1,7 @@
 import { createSignal, createResource, For, Show } from "solid-js";
 import NavBar from "../components/NavBar";
 import Button from "../components/Button";
+import CodeBlock from "../components/CodeBlock";
 import pb from "../lib/pb";
 
 const LANGS = ["Go", "JavaScript", "SQL"];
@@ -151,16 +152,22 @@ export default function Snippets() {
       <ul class="flex flex-col gap-3">
         <For each={snippets() ?? []}>
           {(s) => (
-            <li class="flex items-center justify-between rounded-md border border-[var(--color-border-soft)] bg-[var(--color-field)] px-4 py-3">
-              <div>
-                <p class="font-semibold">{s.title || "(untitled)"}</p>
-                <p class="text-sm opacity-70">{s.lang}</p>
-              </div>
-              <div class="flex items-center">
-                <Button value="Edit" onClick={() => selectSnippet(s)} />
-                <Button value="Delete" variant="danger" onClick={() => handleDelete(s.id)} />
-              </div>
-            </li>
+                        <li class="flex flex-col gap-2 rounded-md border border-[var(--color-border-soft)] bg-[var(--color-field)] px-4 py-3">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="font-semibold">{s.title || "(untitled)"}</p>
+                  <p class="text-sm opacity-70">{s.lang}</p>
+                </div>
+                <div class="flex items-center">
+                  <Button value="Edit" onClick={() => selectSnippet(s)} />
+                  <Button value="Delete" variant="danger" onClick={() => handleDelete(s.id)} />
+                 </div>
+               </div>
+              <Show when={s.snippet}>
+                <CodeBlock code={s.snippet} lang={s.lang} />
+              </Show>
+             </li>
+           
           )}
         </For>
       </ul>
