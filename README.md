@@ -15,5 +15,3 @@
 - [SolidJS](https://github.com/solidjs/solid)
 - [PocketBase](https://github.com/pocketbase/pocketbase)
 
-## Prior Art
-=> https://deepwiki.com/MohamedElashri/snipo
