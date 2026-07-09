@@ -4,14 +4,14 @@ import Button from "../components/Button";
 import CodeBlock from "../components/CodeBlock";
 import pb from "../lib/pb";
 
-const LANGS = ["Go", "JavaScript", "SQL"];
+const LANGS = ["go", "jsx", "sql"];
 
 // Empty form state, also used to reset after create/cancel/delete.
 const emptyForm = () => ({
   id: null,
   title: "",
   filename: "",
-  lang: "Go",
+  lang: "go",
   snippet: "",
   note: "",
   tags: "",
