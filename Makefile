@@ -1,5 +1,8 @@
 BINARY := $(notdir $(CURDIR))
 APP := $(notdir $(CURDIR))
+# Ports used by the dev servers (frontend, backend, and PocketBase-style API)
+PORTS := 3000 3001
+
 
 init:
 	fastmod --hidden myapp $(APP) --glob '!Makefile'
@@ -21,8 +24,13 @@ build: build-frontend
 
 .PHONY: kill-ports
 kill-ports:
-	@lsof -ti:3000 | xargs -r kill -9 2>/dev/null || true
-	@lsof -ti:3001 | xargs -r kill -9 2>/dev/null || true
+	@for port in $(PORTS); do \
+		pid=$$(lsof -ti tcp:$$port); \
+		if [ -n "$$pid" ]; then \
+			echo "Killing process on port $$port (pid $$pid)"; \
+			kill -9 $$pid; \
+		fi \
+	done
 
 
 .PHONY: server
@@ -38,7 +46,7 @@ server: kill-ports build
 # port: 3001
 .PHONY: dev-front
 dev-front: clean kill-ports
-	npx concurrently -n "frontend,backend" -c "blue,green" "cd frontend && pnpm dev" "air"
+	npx concurrently -n "frontend,backend" -c "blue,green" "cd frontend && pnpm dev" "./$(BINARY) serve"
 
 # port: 3000
 .PHONY: dev-back
