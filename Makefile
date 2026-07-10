@@ -52,7 +52,8 @@ test:
 
 
 migrate-collections:
-	go run ./cmd/mineralbox migrate collections
+	rm -f migrations/*.go
+	yes | go run ./cmd/mineralbox migrate collections
 
 
 

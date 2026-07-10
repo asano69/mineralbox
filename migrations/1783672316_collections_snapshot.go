@@ -942,7 +942,7 @@ func init() {
 						"type": "text"
 					},
 					{
-						"cascadeDelete": false,
+						"cascadeDelete": true,
 						"collectionId": "pbc_3292755704",
 						"help": "",
 						"hidden": false,
@@ -951,7 +951,7 @@ func init() {
 						"minSelect": 0,
 						"name": "box",
 						"presentable": false,
-						"required": false,
+						"required": true,
 						"system": false,
 						"type": "relation"
 					},
@@ -1210,7 +1210,7 @@ func init() {
 						"id": "text245846248",
 						"max": 0,
 						"min": 0,
-						"name": "label",
+						"name": "name",
 						"pattern": "",
 						"presentable": false,
 						"primaryKey": false,
@@ -1255,7 +1255,9 @@ func init() {
 					}
 				],
 				"id": "pbc_3292755704",
-				"indexes": [],
+				"indexes": [
+					"CREATE UNIQUE INDEX ` + "`" + `idx_jmyi974qv9` + "`" + ` ON ` + "`" + `boxes` + "`" + ` (` + "`" + `name` + "`" + `)"
+				],
 				"listRule": null,
 				"name": "boxes",
 				"system": false,
