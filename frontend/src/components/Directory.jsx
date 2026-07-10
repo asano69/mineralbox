@@ -1,14 +1,10 @@
 // frontend/src/components/Directory.jsx
 // Left-most pane of the Specimen view: a table-of-contents-like tree built
 // from every snippet's pathname (split on "/"). Selecting a leaf reports
-// its snippet id via props.onSelect, which Specimen.jsx uses to drive both
-// Snippet.jsx and Note.jsx.
-import { createResource, createMemo, createEffect, For, Show } from "solid-js";
-import pb from "../lib/pb";
+// its snippet id via props.onSelect. Purely presentational: the snippet
+// list is fetched once in Specimen.jsx and passed in as props.snippets.
+import { createMemo, createEffect, For, Show } from "solid-js";
 
-// Builds a nested { children: {...} } tree from each snippet's pathname.
-// Intermediate path segments become plain folder nodes; the last segment
-// of each path becomes a leaf node carrying the snippet record itself.
 function buildTree(snippets) {
   const root = { children: {} };
   for (const snippet of snippets) {
@@ -62,23 +58,13 @@ function TreeNode(props) {
 }
 
 export default function Directory(props) {
-  const [snippets] = createResource(
-    () => props.specimenId,
-    (specimenId) =>
-      pb.collection("snippets").getFullList({
-        filter: `specimen = "${specimenId}"`,
-        sort: "pathname",
-      }),
-  );
-
-  const tree = createMemo(() => buildTree(snippets() ?? []));
+  const tree = createMemo(() => buildTree(props.snippets));
 
   // Default to the first file once the list loads, so Snippet/Note
   // aren't left empty before the user picks anything.
   createEffect(() => {
-    const list = snippets();
-    if (list && list.length > 0 && props.selectedId === null) {
-      props.onSelect(list[0].id);
+    if (props.snippets.length > 0 && props.selectedId === null) {
+      props.onSelect(props.snippets[0].id);
     }
   });
 
