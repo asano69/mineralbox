@@ -9,7 +9,6 @@ import Home from "./routes/Home";
 import Settings from "./routes/Settings";
 import Login from "./routes/Login";
 
-import Box from "./routes/Box";
 import Specimen from "./routes/Specimen";
 import pb from "./lib/pb";
 
@@ -37,7 +36,7 @@ render(
         <Route path="/settings" component={Settings} />
         {/* Dynamic box/specimen routes go last so they never shadow the
             static routes above. */}
-        <Route path="/:boxName" component={Box} />
+  
         <Route path="/:boxName/:specimenId" component={Specimen} />
       </Router>
     </AuthGate>

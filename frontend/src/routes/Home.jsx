@@ -19,6 +19,9 @@ export default function Home() {
       pb.collection("specimens").getFullList({
         filter: boxId ? `box = "${boxId}"` : "",
         sort: "-created",
+        // Needed so each card can link to /:boxName/:specimenId without an
+        // extra request per specimen.
+        expand: "box",
       }),
   );
 
@@ -35,7 +38,12 @@ export default function Home() {
             fallback={<p class="opacity-70">No specimens found.</p>}
           >
             <For each={specimens()}>
-              {(specimen) => <SpecimenCard specimen={specimen} />}
+              {(specimen) => (
+                <SpecimenCard
+                  specimen={specimen}
+                  boxName={specimen.expand?.box?.name}
+                />
+              )}
             </For>
           </Show>
         </div>
