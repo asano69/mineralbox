@@ -26,7 +26,7 @@ export default function Home() {
   );
 
   return (
-    <div class="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-8 bg-[var(--color-bg)] px-6 py-12 text-[var(--color-text)]">
+    <div class="flex min-h-screen w-full flex-col gap-6 bg-[var(--color-bg)] px-6 py-6 text-[var(--color-text)]">
       <NavBar />
       <div class="flex flex-col gap-8 md:flex-row">
         <aside class="w-full shrink-0 md:w-56">
