@@ -1,7 +1,7 @@
 // frontend/src/components/Note.jsx
-// Right pane of the Specimen view: the specimen's own label, description,
-// and free-form note (not to be confused with a snippet's per-file
-// annotation, which is rendered next to its code in Content.jsx).
+// Right pane of the Specimen view. Shows the specimen's own label,
+// description, and free-form note, plus the annotation of whichever
+// snippet is currently selected in Directory.jsx (updates as selection changes).
 import { createResource, Show } from "solid-js";
 import pb from "../lib/pb";
 
@@ -11,6 +11,11 @@ export default function Note(props) {
     (specimenId) => pb.collection("specimens").getOne(specimenId),
   );
 
+  const [snippet] = createResource(
+    () => props.snippetId,
+    (snippetId) => pb.collection("snippets").getOne(snippetId),
+  );
+
   return (
     <div class="h-full rounded-md border border-[var(--color-border-soft)] bg-[var(--color-field)] p-4">
       <Show when={specimen()} fallback={<p class="opacity-70">Loading…</p>}>
@@ -18,12 +23,15 @@ export default function Note(props) {
         <Show when={specimen().description}>
           <p class="mb-4 opacity-80">{specimen().description}</p>
         </Show>
-        <Show
-          when={specimen().note}
-          fallback={<p class="opacity-70">No notes yet.</p>}
-        >
+        <Show when={specimen().note} fallback={<p class="opacity-70">No notes yet.</p>}>
           <p class="whitespace-pre-wrap">{specimen().note}</p>
         </Show>
+      </Show>
+
+      <Show when={snippet()?.annotation}>
+        <hr class="my-4 border-[var(--color-border-soft)]" />
+        <h3 class="mb-2 font-semibold">{snippet().pathname}</h3>
+        <p class="whitespace-pre-wrap">{snippet().annotation}</p>
       </Show>
     </div>
   );

@@ -1,7 +1,7 @@
 // frontend/src/components/Content.jsx
-// Left pane of the Specimen view: every snippet (code file) attached to
-// this specimen, each rendered read-only in Monaco.
-import { createResource, For, Show } from "solid-js";
+// Center pane of the Specimen view: renders exactly one snippet (the one
+// picked in Directory.jsx), read-only in Monaco.
+import { createResource, Show } from "solid-js";
 import MonacoEditor from "./MonacoEditor";
 import pb from "../lib/pb";
 
@@ -15,37 +15,20 @@ function langFor(pathname) {
 }
 
 export default function Content(props) {
-  const [snippets] = createResource(
-    () => props.specimenId,
-    (specimenId) =>
-      pb.collection("snippets").getFullList({
-        filter: `specimen = "${specimenId}"`,
-        sort: "pathname",
-      }),
+  const [snippet] = createResource(
+    () => props.snippetId,
+    (snippetId) => pb.collection("snippets").getOne(snippetId),
   );
 
   return (
-    <div class="flex flex-col gap-4">
-      <Show
-        when={(snippets() ?? []).length > 0}
-        fallback={<p class="opacity-70">No snippets for this specimen.</p>}
-      >
-        <For each={snippets()}>
-          {(snippet) => (
-            <div class="rounded-md border border-[var(--color-border-soft)] bg-[var(--color-field)] p-3">
-              <p class="mb-2 font-mono text-sm opacity-70">{snippet.pathname}</p>
-              <MonacoEditor
-                value={snippet.content}
-                lang={langFor(snippet.pathname)}
-                readOnly
-              />
-              <Show when={snippet.annotation}>
-                <p class="mt-2 text-sm opacity-80">{snippet.annotation}</p>
-              </Show>
-            </div>
-          )}
-        </For>
-      </Show>
-    </div>
+    <Show
+      when={snippet()}
+      fallback={<p class="opacity-70">Select a file from the directory.</p>}
+    >
+      <div class="rounded-md border border-[var(--color-border-soft)] bg-[var(--color-field)] p-3">
+        <p class="mb-2 font-mono text-sm opacity-70">{snippet().pathname}</p>
+        <MonacoEditor value={snippet().content} lang={langFor(snippet().pathname)} readOnly />
+      </div>
+    </Show>
   );
 }
