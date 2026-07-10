@@ -18,6 +18,17 @@ specimens
 2 | mineral_id=1 | Go     | crypto/aes wrapper
 3 | mineral_id=2 | Rust   | binary_search()
 ```
+- mineralは、そのコードで実装されている機能の比喩
+
+```
+鉱物種 (mineral)
+    └── 標本 (specimen)
+          └── 個体差・産地・状態などの情報
+
+機能・概念 (mineral)
+    └── コードスニペット (specimen)
+          └── 言語・実装・作者・日時などの情報
+```
 
 ## ❌️ Gitリポジトリの特定コミットの標本化
 mineralboxの目的に照らして不必要な機能と判断。
