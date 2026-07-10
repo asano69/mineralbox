@@ -2,7 +2,7 @@
 // Left-most pane of the Specimen view: a table-of-contents-like tree built
 // from every snippet's pathname (split on "/"). Selecting a leaf reports
 // its snippet id via props.onSelect, which Specimen.jsx uses to drive both
-// File.jsx and Note.jsx.
+// Snippet.jsx and Note.jsx.
 import { createResource, createMemo, createEffect, For, Show } from "solid-js";
 import pb from "../lib/pb";
 
@@ -15,9 +15,9 @@ function buildTree(snippets) {
     const parts = (snippet.pathname || snippet.id).split("/").filter(Boolean);
     let node = root;
     parts.forEach((part, i) => {
-      const isFile = i === parts.length - 1;
+      const isSnippet = i === parts.length - 1;
       if (!node.children[part]) {
-        node.children[part] = isFile
+        node.children[part] = isSnippet
           ? { name: part, snippet }
           : { name: part, children: {} };
       }
@@ -73,7 +73,7 @@ export default function Directory(props) {
 
   const tree = createMemo(() => buildTree(snippets() ?? []));
 
-  // Default to the first file once the list loads, so File/Note
+  // Default to the first file once the list loads, so Snippet/Note
   // aren't left empty before the user picks anything.
   createEffect(() => {
     const list = snippets();
