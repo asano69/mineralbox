@@ -18,15 +18,13 @@ export default function Note(props) {
 );
 
   return (
-    <div class="h-full rounded-md border border-[var(--color-border-soft)] bg-[var(--color-field)] p-4">
-      <Show when={specimen()} fallback={<p class="opacity-70">Loading…</p>}>
+   <div class="h-full overflow-y-auto rounded-md border border-[var(--color-border-soft)] bg-[var(--color-field)] p-4">
+    <Show when={specimen()} fallback={<p class="opacity-70">Loading…</p>}>
         <h2 class="mb-2 font-serif text-2xl">{specimen().label || "(untitled)"}</h2>
         <Show when={specimen().description}>
           <p class="mb-4 opacity-80">{specimen().description}</p>
         </Show>
-        <Show when={specimen().note} fallback={<p class="opacity-70">No notes yet.</p>}>
-          <p class="whitespace-pre-wrap">{specimen().note}</p>
-        </Show>
+      
       </Show>
 
       <Show when={snippet()?.annotation}>

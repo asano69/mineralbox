@@ -54,7 +54,7 @@ export default function MonacoEditor(props) {
   return (
     <div
       ref={container}
-      class="h-64 rounded-md border border-[var(--color-border-soft)]"
+       class="min-h-0 flex-1 rounded-md border border-[var(--color-border-soft)]"
     />
   );
 }

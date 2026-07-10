@@ -26,10 +26,14 @@ const [snippet] = createResource(
       when={snippet()}
       fallback={<p class="opacity-70">Select a file from the directory.</p>}
     >
-      <div class="rounded-md border border-[var(--color-border-soft)] bg-[var(--color-field)] p-3">
-        <p class="mb-2 font-mono text-sm opacity-70">{snippet().pathname}</p>
-        <MonacoEditor value={snippet().content} lang={langFor(snippet().pathname)} readOnly />
-      </div>
-    </Show>
+    <div class="flex h-full flex-col rounded-md border border-[var(--color-border-soft)] bg-[var(--color-field)] p-3">
+    <p class="mb-2 font-mono text-sm opacity-70">{snippet().pathname}</p>
+    <MonacoEditor
+      value={snippet().content}
+      lang={langFor(snippet().pathname)}
+      readOnly
+    />
+  </div>
+</Show>   
   );
 }
