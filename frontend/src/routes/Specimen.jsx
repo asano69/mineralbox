@@ -1,20 +1,25 @@
-import { useParams, A } from "@solidjs/router";
+// frontend/src/routes/Specimen.jsx
+import { useParams } from "@solidjs/router";
 import NavBar from "../components/NavBar";
+import Content from "../components/Content";
+import Note from "../components/Note";
 
-// Placeholder for the specimen detail view (title/note plus its child
-// snippet files). Only wires up routing/params for now; the real
-// PocketBase query comes once the box/specimen schema migration lands.
+// Specimen detail view: code on the left, note on the right, side by side.
+// Replaces the old Snippets.jsx form-based UI.
 export default function Specimen() {
   const params = useParams();
 
   return (
-    <div class="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-8 bg-[var(--color-bg)] px-6 py-12 text-[var(--color-text)]">
+    <div class="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-8 bg-[var(--color-bg)] px-6 py-12 text-[var(--color-text)]">
       <NavBar />
-      <A href="/" class="text-sm opacity-70 hover:opacity-100">
-        ← Back to Home
-      </A>
-      <h1 class="font-serif text-4xl">Specimen: {params.specimenId}</h1>
-      <p class="opacity-70">Snippet files for this specimen will be listed here.</p>
+      <div class="flex flex-1 flex-col gap-6 md:flex-row">
+        <div class="flex-1">
+          <Content specimenId={params.specimenId} />
+        </div>
+        <div class="flex-1">
+          <Note specimenId={params.specimenId} />
+        </div>
+      </div>
     </div>
   );
 }
