@@ -3,12 +3,12 @@ import { createSignal } from "solid-js";
 import { useParams } from "@solidjs/router";
 import NavBar from "../components/NavBar";
 import Directory from "../components/Directory";
-import Content from "../components/Content";
+import File from "../components/File";
 import Note from "../components/Note";
 
 // Specimen detail view: directory tree, then the selected file's code,
 // then its note, side by side. Selection state lives here and is shared
-// between Directory (writes it) and Content/Note (read it).
+// between Directory (writes it) and File/Note (read it).
 export default function Specimen() {
   const params = useParams();
   const [selectedSnippetId, setSelectedSnippetId] = createSignal(null);
@@ -25,7 +25,7 @@ export default function Specimen() {
           />
         </aside>
         <div class="flex-1">
-          <Content snippetId={selectedSnippetId()} />
+          <File snippetId={selectedSnippetId()} />
         </div>
         <div class="flex-1">
           <Note specimenId={params.specimenId} snippetId={selectedSnippetId()} />

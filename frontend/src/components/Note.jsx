@@ -12,9 +12,10 @@ export default function Note(props) {
   );
 
   const [snippet] = createResource(
-    () => props.snippetId,
-    (snippetId) => pb.collection("snippets").getOne(snippetId),
-  );
+  () => props.snippetId,
+  (snippetId) =>
+    pb.collection("snippets").getOne(snippetId, { requestKey: "note-snippet" }),
+);
 
   return (
     <div class="h-full rounded-md border border-[var(--color-border-soft)] bg-[var(--color-field)] p-4">

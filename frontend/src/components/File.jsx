@@ -1,4 +1,4 @@
-// frontend/src/components/Content.jsx
+// frontend/src/components/File.jsx
 // Center pane of the Specimen view: renders exactly one snippet (the one
 // picked in Directory.jsx), read-only in Monaco.
 import { createResource, Show } from "solid-js";
@@ -14,11 +14,12 @@ function langFor(pathname) {
   return EXT_LANG[ext] || "go";
 }
 
-export default function Content(props) {
-  const [snippet] = createResource(
-    () => props.snippetId,
-    (snippetId) => pb.collection("snippets").getOne(snippetId),
-  );
+export default function File(props) {
+const [snippet] = createResource(
+  () => props.snippetId,
+  (snippetId) =>
+    pb.collection("snippets").getOne(snippetId, { requestKey: "content-snippet" }),
+);
 
   return (
     <Show
