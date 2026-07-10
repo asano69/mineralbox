@@ -12,7 +12,7 @@
 
 
 ## ルート設計
-- /: すべてのboxの一覧をカードで表示（暫定）
+- /: ~~boxの一覧+とあるboxの中のspecimenの一覧をカードで表示~~ すべてのspecimenの一覧表示（暫定）
 - /{box_name}: あるboxの中のspecimenの一覧をカードで表示
 - /{box_name}/{specimen_id}: boxの中の特定のspecimenのルートを表示
 
