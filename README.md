@@ -10,6 +10,7 @@
 - このアプリは、SPA＋CSRの個人向けのアプリです。
 - バックエンドはGo+PocketBase **v0.39+**、frontendは、solid.js + **tailwind v4**で書かれています。
 
+![](./.github/assets/sample-01.png)
 
 ## ルート設計
 - /: ~~boxの一覧+とあるboxの中のspecimenの一覧をカードで表示~~ すべてのspecimenの一覧表示（暫定）
