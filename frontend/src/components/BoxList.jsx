@@ -1,14 +1,89 @@
-import { createResource, createSignal, For, Show } from "solid-js";
+import { createResource, createSignal, createEffect, For, Show } from "solid-js";
 import pb from "../lib/pb";
 
-// Stacked list of boxes, plus an "All specimens" entry to clear the filter,
-// and a "New Box" form to create additional boxes. Clicking a box calls
-// props.onSelect(box.id); this component owns its own data fetch since
-// it's meant to be reusable wherever a box picker is needed.
+// One row of the box list while in edit mode: an inline-editable name
+// field (saved on blur, reverted if empty/unchanged/failed) plus a
+// Delete button. Local draft state lives here, not in BoxList, so
+// editing one box's name never touches the others.
+function BoxRow(props) {
+  const [name, setName] = createSignal(props.box.name);
+  const [saving, setSaving] = createSignal(false);
+  const [error, setError] = createSignal("");
+
+  // Reset the draft whenever the underlying box identity changes (e.g.
+  // the list was refetched elsewhere) so a stale draft never lingers.
+  createEffect((prevId) => {
+    if (props.box.id !== prevId) {
+      setName(props.box.name);
+      setError("");
+    }
+    return props.box.id;
+  });
+
+  const handleBlur = async () => {
+    const trimmed = name().trim();
+    if (!trimmed || trimmed === props.box.name) {
+      setName(props.box.name);
+      return;
+    }
+    setSaving(true);
+    setError("");
+    try {
+      const updated = await pb.collection("boxes").update(props.box.id, { name: trimmed });
+      props.onRenamed(updated);
+    } catch {
+      setName(props.box.name);
+      setError("Failed to rename. Name may already be in use.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm(`Delete box "${props.box.name}"? Its specimens will remain unboxed.`)) return;
+    setSaving(true);
+    setError("");
+    try {
+      await pb.collection("boxes").delete(props.box.id);
+      props.onDeleted(props.box.id);
+    } catch {
+      setError("Failed to delete the box.");
+      setSaving(false);
+    }
+  };
+
+  return (
+    <li class="flex flex-col gap-1">
+      <div class="flex items-center gap-2">
+        <input
+          type="text"
+          value={name()}
+          onInput={(e) => setName(e.target.value)}
+          onBlur={handleBlur}
+          disabled={saving()}
+          class="flex-1 rounded-md border border-[var(--color-border-soft)] bg-[var(--color-bg)] px-2 py-1 text-[var(--color-text)]"
+        />
+        <button type="button" class="btn" disabled={saving()} onClick={handleDelete}>
+          Delete
+        </button>
+      </div>
+      {error() && <p class="text-sm text-[#dc3545]">{error()}</p>}
+    </li>
+  );
+}
+
+// Stacked list of boxes, plus an "All specimens" entry to clear the
+// filter, a "New Box" form, and an "Edit Box" mode that turns every box
+// into an inline-renameable row with a Delete button. Clicking a box in
+// normal mode calls props.onSelect(box.id); this component owns its own
+// data fetch since it's meant to be reusable wherever a box picker is
+// needed.
 export default function BoxList(props) {
-  const [boxes, { refetch }] = createResource(() =>
+  const [boxes, { mutate }] = createResource(() =>
     pb.collection("boxes").getFullList({ sort: "name" }),
   );
+
+  const [editMode, setEditMode] = createSignal(false);
 
   const [creating, setCreating] = createSignal(false);
   const [newName, setNewName] = createSignal("");
@@ -22,6 +97,8 @@ export default function BoxList(props) {
         : "border-[var(--color-border-soft)] bg-[var(--color-field)] hover:bg-[var(--color-hover-bg)]"
     }`;
 
+  const sortByName = (list) => [...list].sort((a, b) => a.name.localeCompare(b.name));
+
   const startCreating = () => {
     setNewName("");
     setError("");
@@ -34,8 +111,8 @@ export default function BoxList(props) {
     setCreating(false);
   };
 
-  // Creates a new box, refetches the list so it appears in the right
-  // sorted position, then selects it immediately.
+  // Creates a new box and merges it into the local list, keeping the
+  // "name" sort order intact instead of re-fetching from the server.
   const handleCreate = async (e) => {
     e.preventDefault();
     const name = newName().trim();
@@ -44,7 +121,7 @@ export default function BoxList(props) {
     setError("");
     try {
       const created = await pb.collection("boxes").create({ name });
-      await refetch();
+      mutate((prev) => sortByName([...(prev ?? []), created]));
       props.onSelect(created.id);
       setNewName("");
       setCreating(false);
@@ -53,6 +130,21 @@ export default function BoxList(props) {
     } finally {
       setSaving(false);
     }
+  };
+
+  // Merges a renamed box into the local list and re-sorts, since renaming
+  // can change its position in the "name"-sorted list.
+  const handleRenamed = (updated) => {
+    mutate((prev) =>
+      sortByName((prev ?? []).map((b) => (b.id === updated.id ? updated : b))),
+    );
+  };
+
+  // Removes a deleted box from the local list, clearing the selection if
+  // the deleted box was the one currently selected.
+  const handleDeleted = (deletedId) => {
+    mutate((prev) => (prev ?? []).filter((b) => b.id !== deletedId));
+    if (props.selectedId === deletedId) props.onSelect(null);
   };
 
   return (
@@ -67,29 +159,50 @@ export default function BoxList(props) {
             All specimens
           </button>
         </li>
-        <For each={boxes() ?? []}>
-          {(box) => (
-            <li>
-              <button
-                type="button"
-                class={itemClass(props.selectedId === box.id)}
-                onClick={() => props.onSelect(box.id)}
-              >
-                {box.name}
-              </button>
-            </li>
-          )}
-        </For>
+        <Show
+          when={editMode()}
+          fallback={
+            <For each={boxes() ?? []}>
+              {(box) => (
+                <li>
+                  <button
+                    type="button"
+                    class={itemClass(props.selectedId === box.id)}
+                    onClick={() => props.onSelect(box.id)}
+                  >
+                    {box.name}
+                  </button>
+                </li>
+              )}
+            </For>
+          }
+        >
+          <For each={boxes() ?? []}>
+            {(box) => (
+              <BoxRow box={box} onRenamed={handleRenamed} onDeleted={handleDeleted} />
+            )}
+          </For>
+        </Show>
       </ul>
 
-      <Show
-        when={creating()}
-        fallback={
+      <div class="flex items-center gap-3">
+        <Show
+          when={!creating()}
+        >
           <button type="button" class="btn self-start" onClick={startCreating}>
-            New Box
+            New
           </button>
-        }
-      >
+        </Show>
+        <button
+          type="button"
+          class="btn self-start"
+          onClick={() => setEditMode((v) => !v)}
+        >
+          {editMode() ? "Done" : "Edit"}
+        </button>
+      </div>
+
+      <Show when={creating()}>
         <form onSubmit={handleCreate} class="flex flex-col gap-2">
           <input
             type="text"
