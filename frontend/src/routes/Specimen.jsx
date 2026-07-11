@@ -9,12 +9,13 @@ import pb from "../lib/pb";
 // Specimen detail view: directory tree, then the selected file's code,
 // then its note, side by side. The snippet list is fetched once here and
 // shared by every pane, so no pane re-fetches a snippet it can already
-// see in the list.
+// see in the list. When Snippet.jsx or Note.jsx saves a change, the
+// cached resources below are patched in place instead of being refetched.
 export default function Specimen() {
   const params = useParams();
   const [selectedSnippetId, setSelectedSnippetId] = createSignal(null);
 
-  const [snippets] = createResource(
+  const [snippets, { mutate: mutateSnippets }] = createResource(
     () => params.specimenId,
     (specimenId) =>
       pb.collection("snippets").getFullList({
@@ -23,7 +24,7 @@ export default function Specimen() {
       }),
   );
 
-  const [specimen] = createResource(
+  const [specimen, { mutate: mutateSpecimen }] = createResource(
     () => params.specimenId,
     (specimenId) => pb.collection("specimens").getOne(specimenId),
   );
@@ -31,6 +32,12 @@ export default function Specimen() {
   const selectedSnippet = createMemo(() =>
     (snippets() ?? []).find((s) => s.id === selectedSnippetId()) ?? null,
   );
+
+  const handleSnippetSaved = (updated) => {
+    mutateSnippets((list) =>
+      (list ?? []).map((s) => (s.id === updated.id ? updated : s)),
+    );
+  };
 
   return (
     <div class="flex h-screen w-full flex-col gap-6 bg-[var(--color-bg)] px-6 py-6 text-[var(--color-text)]">
@@ -44,10 +51,15 @@ export default function Specimen() {
           />
         </aside>
         <div class="flex-1 min-h-0">
-          <Snippet snippet={selectedSnippet()} />
+          <Snippet snippet={selectedSnippet()} onSaved={handleSnippetSaved} />
         </div>
         <div class="flex-1 min-h-0">
-          <Note specimen={specimen()} snippet={selectedSnippet()} />
+          <Note
+            specimen={specimen()}
+            snippet={selectedSnippet()}
+            onSpecimenSaved={mutateSpecimen}
+            onSnippetSaved={handleSnippetSaved}
+          />
         </div>
       </div>
     </div>
