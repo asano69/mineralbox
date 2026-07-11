@@ -36,16 +36,18 @@ export default function Specimen() {
 
   return (
     <div class="flex h-screen w-full flex-col gap-3 bg-[var(--color-bg)] px-6 py-6 text-[var(--color-text)]">
-      <NavBar />
+
      
       <div class="flex flex-1 min-h-0 flex-col gap-3 md:flex-row">
         <aside class="w-full shrink-0 overflow-y-auto md:w-56">
+          <NavBar />
           <SpecimenInfo specimen={specimen()} />
           <Directory
             snippets={snippets() ?? []}
             selectedId={selectedSnippetId()}
             onSelect={setSelectedSnippetId}
           />
+         
         </aside>
         <div class="flex-1 min-h-0">
           <Snippet snippet={selectedSnippet()} />
