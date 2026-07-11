@@ -33,9 +33,18 @@
 - MonacoEditor
 - バックエンドはGo+PocketBase **v0.39+**、frontendは、solid.js + **tailwind v4**で書かれています。
 
+---
+
+
+## 実験的な用途
+
+- 外国語学習や、論文のアノテーションノートにも使うことができる。
+![](./.github/assets/sample-02.png)
+
 ### Prior Art
 - https://deepwiki.com/snibox/snibox
 - https://deepwiki.com/MohamedElashri/snipo
 - https://deepwiki.com/jordan-dalby/ByteStash
 
 https://snipo.melashri.dev/
+
