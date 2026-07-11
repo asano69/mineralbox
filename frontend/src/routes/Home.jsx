@@ -46,6 +46,12 @@ export default function Home() {
     );
   };
 
+  // Removes a deleted specimen from the local list, mirroring
+  // handleSpecimenSaved's local-mutation approach.
+  const handleSpecimenDeleted = (deletedId) => {
+    mutate((prev) => (prev ?? []).filter((s) => s.id !== deletedId));
+  };
+
   return (
     <div class="flex min-h-screen w-full flex-col gap-6 bg-[var(--color-bg)] px-6 py-6 text-[var(--color-text)]">
       <NavBar />
@@ -74,6 +80,7 @@ export default function Home() {
                     specimen={specimen}
                     boxName={specimen.expand?.box?.name}
                     onSaved={handleSpecimenSaved}
+                    onDeleted={handleSpecimenDeleted}
                   />
                 )}
               </For>

@@ -53,7 +53,22 @@ export default function SpecimenCard(props) {
     setError("");
     setEditing(false);
   };
+const handleDelete = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!window.confirm("Delete this specimen? This cannot be undone.")) return;
+    setSaving(true);
+    setError("");
+    try {
+      await pb.collection("specimens").delete(props.specimen.id);
+      props.onDeleted?.(props.specimen.id);
+    } catch {
+      setError("Failed to delete the specimen. Please try again.");
+      setSaving(false);
+    }
+  };
 
+ 
   const handleSave = async (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -74,6 +89,8 @@ export default function SpecimenCard(props) {
       setSaving(false);
     }
   };
+
+
 
   return (
     <Show
@@ -108,7 +125,7 @@ export default function SpecimenCard(props) {
           rows="3"
           class="resize-none rounded-md border border-[var(--color-border-soft)] bg-[var(--color-bg)] px-2 py-1 text-sm text-[var(--color-text)]"
         />
-        <div class="flex items-center gap-3">
+    <div class="flex items-center gap-3">
           <button
             type="button"
             class="btn"
@@ -120,8 +137,17 @@ export default function SpecimenCard(props) {
           <button type="button" class="btn" disabled={saving()} onClick={handleCancel}>
             Reset
           </button>
+          <button
+            type="button"
+            class="btn border !border-[#c82333] bg-[#dc3545] text-white enabled:hover:bg-[#c82333] enabled:hover:border-[#c82333] enabled:active:bg-[#bd2130] enabled:active:border-[#bd2130]"
+            disabled={saving()}
+            onClick={handleDelete}
+          >
+            Delete
+          </button>
           {error() && <p class="text-sm text-[#dc3545]">{error()}</p>}
         </div>
+      
       </div>
     </Show>
   );
