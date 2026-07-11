@@ -53,7 +53,7 @@ export default function Snippet(props) {
             </button>
           </Show>
         </div>
-<MonacoEditor
+        <MonacoEditor
           value={
             editable.editing()
               ? editable.draft().content

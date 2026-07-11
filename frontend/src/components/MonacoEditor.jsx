@@ -93,11 +93,17 @@ export default function MonacoEditor(props) {
   });
 
   // Reveals (scrolls to) props.highlightRange, e.g. after clicking a
-  // line-anchor button in Note's preview. The range is already colored
-  // by the effect above, so this only needs to move the viewport.
+  // line-anchor button in Note's preview, and also selects those lines
+  // so they get Monaco's normal (blue) selection highlight instead of
+  // just being scrolled into view.
   createEffect(() => {
     const range = props.highlightRange;
-    if (editor && range) editor.revealLineInCenter(range.start);
+    if (!editor || !range) return;
+    const model = editor.getModel();
+    const endColumn = model.getLineMaxColumn(range.end);
+    editor.setSelection(new monaco.Range(range.start, 1, range.end, endColumn));
+    editor.revealLineInCenter(range.start);
+    editor.focus();
   });
 
   onCleanup(() => editor?.dispose());

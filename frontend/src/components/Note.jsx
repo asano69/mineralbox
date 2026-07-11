@@ -7,7 +7,6 @@ import pb from "../lib/pb";
 import { createEditableRecord } from "../lib/createEditableRecord";
 import { parseLineAnchor, colorForRange } from "../lib/lineAnchors";
 
-
 // Renders a line-anchor as a button. The tint is passed as a CSS custom
 // property (--anchor-tint) rather than a plain background-color, so the
 // glass-like gradient/blur/shadow layering lives entirely in .line-anchor
@@ -46,19 +45,23 @@ markedWithLineAnchors.use({
       tokenizer(src) {
         const anchor = parseLineAnchor(src);
         if (!anchor) return;
-        return { type: "lineAnchor", raw: anchor.raw, start: anchor.start, end: anchor.end };
+        return {
+          type: "lineAnchor",
+          raw: anchor.raw,
+          start: anchor.start,
+          end: anchor.end,
+        };
       },
       renderer(token) {
         const label =
-          token.end !== token.start ? `#L${token.start}-L${token.end}` : `#L${token.start}`;
+          token.end !== token.start
+            ? `#L${token.start}-L${token.end}`
+            : `#L${token.start}`;
         return lineAnchorButton(token.start, token.end, label);
       },
     },
   ],
 });
-
-
-
 
 function toHtml(markdown) {
   return markdown
@@ -73,7 +76,7 @@ export default function Note(props) {
     (patch) => pb.collection("snippets").update(props.snippet.id, patch),
   );
 
- const snippetHtml = createMemo(() => toHtml(editable.current().annotation));
+  const snippetHtml = createMemo(() => toHtml(editable.current().annotation));
 
   // Delegated click handler for the "#L32-L35" line-anchor buttons inside
   // the rendered markdown (event delegation, since content set via

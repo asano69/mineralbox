@@ -65,7 +65,7 @@ export default function Specimen() {
     (specimenId) => pb.collection("specimens").getOne(specimenId),
   );
 
-const selectedSnippet = createMemo(
+  const selectedSnippet = createMemo(
     () => (snippets() ?? []).find((s) => s.id === selectedSnippetId()) ?? null,
   );
 
@@ -92,7 +92,7 @@ const selectedSnippet = createMemo(
           />
         </aside>
         <div class="flex-1 min-h-0">
-                  <Snippet
+          <Snippet
             snippet={selectedSnippet()}
             highlightRange={highlightRange()}
             lineAnchors={lineAnchors()}
