@@ -1,4 +1,4 @@
-import NavBar from "../../components/NavBar";
+import Logo from "../../components/Logo";
 import Admin from "./Admin";
 
 // Settings combines the Admin and Connections sections onto one page.
@@ -7,7 +7,7 @@ import Admin from "./Admin";
 export default function Settings() {
   return (
     <div class="flex min-h-screen w-full flex-col gap-12 bg-[var(--color-bg)] px-6 py-12 text-[var(--color-text)]">
-      <NavBar />
+      <Logo />
       <h1 class="font-serif text-4xl">Settings</h1>
 
       <Admin />

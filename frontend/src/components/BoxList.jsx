@@ -8,8 +8,6 @@ import {
 import pb from "../lib/pb";
 import { createEditableRecord } from "../lib/createEditableRecord";
 
-
-
 function BoxRow(props) {
   const editable = createEditableRecord(
     () => props.box,
@@ -66,7 +64,9 @@ function BoxRow(props) {
           Delete
         </button>
       </div>
-      {editable.error() && <p class="text-sm text-[#dc3545]">{editable.error()}</p>}
+      {editable.error() && (
+        <p class="text-sm text-[#dc3545]">{editable.error()}</p>
+      )}
     </li>
   );
 }

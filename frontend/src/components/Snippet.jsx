@@ -55,10 +55,14 @@ export default function Snippet(props) {
         </div>
         <MonacoEditor
           value={
-            editable.editing() ? editable.draft().content : editable.current().content
+            editable.editing()
+              ? editable.draft().content
+              : editable.current().content
           }
           lang={langFor(
-            editable.editing() ? editable.draft().pathname : editable.current().pathname,
+            editable.editing()
+              ? editable.draft().pathname
+              : editable.current().pathname,
           )}
           readOnly={!editable.editing()}
           onChange={(v) => editable.setField("content", v)}

@@ -61,7 +61,9 @@ export default function SpecimenCard(props) {
           class="flex flex-col gap-2 rounded-md border border-[var(--color-border-soft)] bg-[var(--color-field)] px-4 py-3 shadow-[0_1px_3px_0_var(--color-shadow)] transition-colors hover:bg-[var(--color-hover-bg)]"
         >
           <div class="flex items-center justify-between gap-2">
-            <p class="font-semibold">{editable.current().label || "(untitled)"}</p>
+            <p class="font-semibold">
+              {editable.current().label || "(untitled)"}
+            </p>
             <button type="button" class="btn" onClick={startEditing}>
               Edit
             </button>
@@ -112,7 +114,9 @@ export default function SpecimenCard(props) {
           >
             Delete
           </button>
-          {editable.error() && <p class="text-sm text-[#dc3545]">{editable.error()}</p>}
+          {editable.error() && (
+            <p class="text-sm text-[#dc3545]">{editable.error()}</p>
+          )}
         </div>
       </div>
     </Show>

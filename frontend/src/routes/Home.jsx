@@ -1,5 +1,6 @@
 import { createSignal, createResource, For, Show } from "solid-js";
-import NavBar from "../components/NavBar";
+import Logo from "../components/Logo";
+import Menu from "../components/Menu";
 import BoxList from "../components/BoxList";
 import SpecimenCard from "../components/SpecimenCard";
 import pb from "../lib/pb";
@@ -79,14 +80,15 @@ export default function Home() {
 
   return (
     <div class="flex min-h-screen w-full flex-col gap-6 bg-[var(--color-bg)] px-6 py-6 text-[var(--color-text)]">
-      <NavBar />
       <div class="flex flex-col gap-8 md:flex-row">
         <aside class="w-full shrink-0 md:w-56">
+          <Logo />
           <BoxList
             selectedId={selectedBoxId()}
             onSelect={setSelectedBoxId}
             onDropSpecimen={handleDropSpecimen}
           />
+          <Menu />
         </aside>
         <div class="flex flex-1 flex-col gap-4">
           <button

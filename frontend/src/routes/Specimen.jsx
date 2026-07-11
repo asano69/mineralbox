@@ -1,7 +1,7 @@
 // frontend/src/routes/Specimen.jsx
 import { createSignal, createResource, createMemo } from "solid-js";
 import { useParams } from "@solidjs/router";
-import NavBar from "../components/NavBar";
+import Logo from "../components/Logo";
 import Directory from "../components/Directory";
 import Snippet from "../components/Snippet";
 import Note from "../components/Note";
@@ -60,7 +60,7 @@ export default function Specimen() {
     <div class="flex h-screen w-full flex-col gap-3 bg-[var(--color-bg)] px-6 py-6 text-[var(--color-text)]">
       <div class="flex flex-1 min-h-0 flex-col gap-3 md:flex-row">
         <aside class="w-full shrink-0 overflow-y-auto md:w-56">
-          <NavBar />
+          <Logo />
           <SpecimenInfo specimen={specimen()} />
           <Directory
             snippets={snippets() ?? []}
