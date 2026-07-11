@@ -16,14 +16,22 @@ export default function Specimen() {
   const params = useParams();
   const [selectedSnippetId, setSelectedSnippetId] = createSignal(null);
 
-  const [snippets] = createResource(
-    () => params.specimenId,
-    (specimenId) =>
-      pb.collection("snippets").getFullList({
-        filter: `specimen = "${specimenId}"`,
-        sort: "pathname",
-      }),
+  const [snippets, { mutate: mutateSnippets }] = createResource(
+  () => params.specimenId,
+  (specimenId) =>
+    pb.collection("snippets").getFullList({
+      filter: `specimen = "${specimenId}"`,
+      sort: "pathname",
+    }),
+);
+
+// Keeps the Directory tree in sync when Snippet/Note save a change,
+// without re-fetching the whole list from the server.
+const handleSnippetSaved = (updated) => {
+  mutateSnippets((prev) =>
+    (prev ?? []).map((s) => (s.id === updated.id ? updated : s)),
   );
+};
 
   const [specimen] = createResource(
     () => params.specimenId,
@@ -50,10 +58,10 @@ export default function Specimen() {
          
         </aside>
         <div class="flex-1 min-h-0">
-          <Snippet snippet={selectedSnippet()} />
+          <Snippet snippet={selectedSnippet()} onSaved={handleSnippetSaved} />
         </div>
         <div class="flex-1 min-h-0">
-          <Note snippet={selectedSnippet()} />
+          <Note snippet={selectedSnippet()} onSaved={handleSnippetSaved} />
         </div>
       </div>
     </div>
