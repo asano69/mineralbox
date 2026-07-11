@@ -72,12 +72,10 @@ export default function Snippet(props) {
     setSaving(true);
     setError("");
     try {
-      const updated = await pb
-        .collection("snippets")
-        .update(props.snippet.id, {
-          content: draft(),
-          pathname: draftPathname(),
-        });
+      const updated = await pb.collection("snippets").update(props.snippet.id, {
+        content: draft(),
+        pathname: draftPathname(),
+      });
       setCurrent(updated.content);
       setCurrentPathname(updated.pathname);
       props.onSaved?.(updated);

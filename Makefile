@@ -58,6 +58,8 @@ dev-back: clean
 test:
 	go test ./...
 
+format:
+	cd frontend && pnpm exec prettier --write "src/**/*.{js,jsx,css}"
 
 migrate-collections:
 	rm -f migrations/*.go
