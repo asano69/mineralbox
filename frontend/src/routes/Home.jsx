@@ -13,7 +13,7 @@ export default function Home() {
   // Wrapped in an object so the source is always truthy: createResource
   // skips the fetcher entirely when its source signal returns null, which
   // would otherwise stop specimens from loading when no box is selected.
-  const [specimens] = createResource(
+  const [specimens, { refetch }] = createResource(
     () => ({ boxId: selectedBoxId() }),
     ({ boxId }) =>
       pb.collection("specimens").getFullList({
@@ -25,6 +25,15 @@ export default function Home() {
       }),
   );
 
+  // Creates a new, mostly-empty specimen in the currently selected box.
+  // Requires a box to be selected since specimens.box is a required
+  // field; label/description etc. are filled in later via SpecimenInfo.
+  const handleCreate = async () => {
+    if (!selectedBoxId()) return;
+    await pb.collection("specimens").create({ box: selectedBoxId() });
+    refetch();
+  };
+
   return (
     <div class="flex min-h-screen w-full flex-col gap-6 bg-[var(--color-bg)] px-6 py-6 text-[var(--color-text)]">
       <NavBar />
@@ -32,20 +41,31 @@ export default function Home() {
         <aside class="w-full shrink-0 md:w-56">
           <BoxList selectedId={selectedBoxId()} onSelect={setSelectedBoxId} />
         </aside>
-        <div class="grid flex-1 grid-cols-1 gap-4 content-start sm:grid-cols-2">
-          <Show
-            when={(specimens() ?? []).length > 0}
-            fallback={<p class="opacity-70">No specimens found.</p>}
+        <div class="flex flex-1 flex-col gap-4">
+          <button
+            type="button"
+            class="btn self-start"
+            disabled={!selectedBoxId()}
+            title={!selectedBoxId() ? "Select a box first" : undefined}
+            onClick={handleCreate}
           >
-            <For each={specimens()}>
-              {(specimen) => (
-                <SpecimenCard
-                  specimen={specimen}
-                  boxName={specimen.expand?.box?.name}
-                />
-              )}
-            </For>
-          </Show>
+            New Specimen
+          </button>
+          <div class="grid grid-cols-1 gap-4 content-start sm:grid-cols-2">
+            <Show
+              when={(specimens() ?? []).length > 0}
+              fallback={<p class="opacity-70">No specimens found.</p>}
+            >
+              <For each={specimens()}>
+                {(specimen) => (
+                  <SpecimenCard
+                    specimen={specimen}
+                    boxName={specimen.expand?.box?.name}
+                  />
+                )}
+              </For>
+            </Show>
+          </div>
         </div>
       </div>
     </div>
