@@ -6,24 +6,62 @@ import MonacoEditor from "./MonacoEditor";
 import pb from "../lib/pb";
 import { createEditableRecord } from "../lib/createEditableRecord";
 
-// Matches the "#L32" / "#L32-L35" line-anchor links used to reference
-// specific lines of the current snippet's code from within a note, e.g.
-// "see [the loop](#L32-L35)".
-const LINE_ANCHOR = /^#L(\d+)(?:-L(\d+))?$/;
+// Matches a line-anchor reference: "#L32", "#L32-L35", or "#L32-35"
+// (the second "L" is optional). Not anchored at the end, since bare
+// mentions are surrounded by other running text.
+const LINE_ANCHOR = /^#L(\d+)(?:-L?(\d+))?/;
+
+// Parses a line-anchor string into { raw, start, end }, or null if it
+// doesn't match. `raw` is only the matched prefix, so callers that need
+// an exact full-string match (e.g. a link's href) must compare lengths
+// themselves.
+function parseLineAnchor(str) {
+  const match = LINE_ANCHOR.exec(str);
+  if (!match) return null;
+  const [raw, start, end] = match;
+  return { raw, start: Number(start), end: end ? Number(end) : Number(start) };
+}
+
+function lineAnchorButton(start, end, label) {
+  return `<button type="button" class="line-anchor" data-line-start="${start}" data-line-end="${end}">${label}</button>`;
+}
 
 // A dedicated Marked instance keeps this override local to Note.jsx
 // instead of mutating the shared/global marked renderer.
 const markedWithLineAnchors = new Marked();
 markedWithLineAnchors.use({
+  // Handles the explicit "[label](#L32-L35)" markdown link form, keeping
+  // the caller's own label instead of the raw "#L32-L35" text.
   renderer: {
     link(token) {
-      const match = LINE_ANCHOR.exec(token.href);
-      if (!match) return false; // fall back to the default <a> rendering
-      const [, start, end] = match;
+      const anchor = parseLineAnchor(token.href);
+      if (!anchor || anchor.raw !== token.href) return false; // fall back to the default <a> rendering
       const text = this.parser.parseInline(token.tokens);
-      return `<button type="button" class="line-anchor" data-line-start="${start}" data-line-end="${end || start}">${text}</button>`;
+      return lineAnchorButton(anchor.start, anchor.end, text);
     },
   },
+  // Handles a bare "#L32-L35" mention anywhere in running text, with no
+  // link syntax required.
+  extensions: [
+    {
+      name: "lineAnchor",
+      level: "inline",
+      start(src) {
+        const index = src.search(/#L\d+/);
+        return index === -1 ? undefined : index;
+      },
+      tokenizer(src) {
+        const anchor = parseLineAnchor(src);
+        if (!anchor) return;
+        return { type: "lineAnchor", raw: anchor.raw, start: anchor.start, end: anchor.end };
+      },
+      renderer(token) {
+        const label =
+          token.end !== token.start ? `#L${token.start}-L${token.end}` : `#L${token.start}`;
+        return lineAnchorButton(token.start, token.end, label);
+      },
+    },
+  ],
 });
 
 function toHtml(markdown) {

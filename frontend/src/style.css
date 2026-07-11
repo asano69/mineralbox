@@ -26,6 +26,8 @@
   /* ---custom ---*/
   --color-progress: palegreen;
   --color-muted: #e5e5e5;
+  --color-anchor: #d97706;
+  --color-anchor-text: #ffffff;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -46,6 +48,8 @@
     /* ---custom ---*/
     --color-progress: #2a6e2a;
     --color-muted: #202020;
+    --color-anchor: #f0a83c;
+    --color-anchor-text: #1a1a1a;
   }
 }
 
@@ -207,6 +211,26 @@
     border-radius: 6px;
   }
 
+  /* Line-anchor buttons rendered from "#L32-L35" mentions in a note's
+   * markdown (see Note.jsx). Styled as a distinct badge so it stands out
+   * from regular links and prose. */
+  .line-anchor {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    font-weight: bold;
+    padding: 0.1em 0.5em;
+    border-radius: 999px;
+    background: var(--color-anchor);
+    color: var(--color-anchor-text);
+    border: none;
+    cursor: pointer;
+    transition: opacity 150ms;
+  }
+  .line-anchor:hover {
+    opacity: 0.85;
+  }
   /* Monaco decoration for the line range referenced by a "#L32-L35"
    * line-anchor link clicked in Note's preview (see MonacoEditor.jsx). */
   .line-highlight {
