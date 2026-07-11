@@ -12,7 +12,13 @@
 
 ![](./.github/assets/sample-01.png)
 
-## ルート設計
+## Design
+- このアプリでもっとも重要なエンティティは、Specimenです。Specimenの構成要素としてSnippetがあり、Specimenの分類方法にBoxとTagがあります。
+- Snippetは、Box/Specimen/Snippetという階層構造で整理されています。Snippetは必ずSpecimenの一部であり、あるSpecimenは必ずあるBoxに所属します。
+- Githubで例えるとBoxがuserでSpecimenがリポジトリに相当します。Snippetはあるリポジトリの中のファイルに相当します。
+
+
+### ルート設計
 - /: ~~boxの一覧+とあるboxの中のspecimenの一覧をカードで表示~~ すべてのspecimenの一覧表示（暫定）
 - /{box_name}: あるboxの中のspecimenの一覧をカードで表示
 - /{box_name}/{specimen_id}: boxの中の特定のspecimenのルートを表示
