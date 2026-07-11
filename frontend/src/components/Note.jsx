@@ -93,7 +93,7 @@ export default function Note(props) {
                 when={current()}
                 fallback={<p class="opacity-70">No notes yet.</p>}
               >
-                <div innerHTML={snippetHtml()} />
+                <div class="markdown" innerHTML={snippetHtml()} />
               </Show>
             </div>
           }
