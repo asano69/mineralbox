@@ -104,16 +104,36 @@ export function textColorForRange() {
   return isDarkMode() ? "#1a1a1a" : "#ffffff";
 }
 
+// Returns true if range `a` is entirely inside range `b` and strictly
+// smaller than it (not identical). Used to make a more specific range
+// (e.g. L10) win outright over a broader one that happens to cover the
+// same line (e.g. L10-L11), instead of blending their colors together.
+function isProperSubset(a, b) {
+  return (
+    a.start >= b.start && a.end <= b.end && (a.start > b.start || a.end < b.end)
+  );
+}
+
 // Background color for a Monaco line highlight covering `line`, or null
 // if no range covers it. Only the hue is shared with the button color;
 // lightness leans toward the editor's own background (near-white in
 // light mode, near-black in dark mode) instead of a fixed mid-tone, and
 // a low alpha lets the syntax-highlighted code show through, so the
 // line reads as a soft tint rather than a block that fights the text.
+//
+// If one covering range is a strict subset of another (e.g. L10 inside
+// L10-L11), the subset's color wins alone for that line rather than
+// blending with the broader range, so nested references stay visually
+// distinct. Colors are only blended when two ranges genuinely overlap
+// without either containing the other (e.g. L1-5 and L2-7 blend only
+// across L2-5).
 function lineHighlightColor(ranges, line) {
   const covering = ranges.filter((r) => line >= r.start && line <= r.end);
-  if (covering.length === 0) return null;
-  const hue = meanHue(covering.map(hueForRange));
+  const effective = covering.filter(
+    (r) => !covering.some((other) => other !== r && isProperSubset(other, r)),
+  );
+  if (effective.length === 0) return null;
+  const hue = meanHue(effective.map(hueForRange));
   const lightness = isDarkMode() ? 25 : 85;
   return `hsla(${hue}, 70%, ${lightness}%, 0.35)`;
 }
