@@ -65,6 +65,7 @@ export default function Snippet(props) {
               : editable.current().pathname,
           )}
           readOnly={!editable.editing()}
+          highlightRange={props.highlightRange}
           onChange={(v) => editable.setField("content", v)}
         />
         <Show when={editable.editing()}>

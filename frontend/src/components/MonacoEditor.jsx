@@ -18,6 +18,7 @@ const LANG_MAP = {
 export default function MonacoEditor(props) {
   let container;
   let editor;
+  let highlightDecorations;
 
   onMount(() => {
     const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
@@ -32,6 +33,8 @@ export default function MonacoEditor(props) {
       readOnly: props.readOnly ?? false,
       domReadOnly: props.readOnly ?? false,
     });
+
+    highlightDecorations = editor.createDecorationsCollection();
 
     editor.onDidChangeModelContent(() => {
       const value = editor.getValue();
@@ -66,6 +69,25 @@ export default function MonacoEditor(props) {
     if (editor && props.value !== editor.getValue()) {
       editor.setValue(props.value ?? "");
     }
+  });
+
+  // Reveals and highlights props.highlightRange ({ start, end }), e.g.
+  // after clicking a "#L32-L35" line-anchor link in Note's preview.
+  // Setting highlightRange to null clears the highlight.
+  createEffect(() => {
+    if (!editor) return;
+    const range = props.highlightRange;
+    if (!range) {
+      highlightDecorations.set([]);
+      return;
+    }
+    editor.revealLineInCenter(range.start);
+    highlightDecorations.set([
+      {
+        range: new monaco.Range(range.start, 1, range.end, 1),
+        options: { isWholeLine: true, className: "line-highlight" },
+      },
+    ]);
   });
 
   onCleanup(() => editor?.dispose());

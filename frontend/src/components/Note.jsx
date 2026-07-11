@@ -1,13 +1,35 @@
 // frontend/src/components/Note.jsx
 import { createMemo, Show } from "solid-js";
-import { marked } from "marked";
+import { Marked } from "marked";
 import DOMPurify from "dompurify";
 import MonacoEditor from "./MonacoEditor";
 import pb from "../lib/pb";
 import { createEditableRecord } from "../lib/createEditableRecord";
 
+// Matches the "#L32" / "#L32-L35" line-anchor links used to reference
+// specific lines of the current snippet's code from within a note, e.g.
+// "see [the loop](#L32-L35)".
+const LINE_ANCHOR = /^#L(\d+)(?:-L(\d+))?$/;
+
+// A dedicated Marked instance keeps this override local to Note.jsx
+// instead of mutating the shared/global marked renderer.
+const markedWithLineAnchors = new Marked();
+markedWithLineAnchors.use({
+  renderer: {
+    link(token) {
+      const match = LINE_ANCHOR.exec(token.href);
+      if (!match) return false; // fall back to the default <a> rendering
+      const [, start, end] = match;
+      const text = this.parser.parseInline(token.tokens);
+      return `<button type="button" class="line-anchor" data-line-start="${start}" data-line-end="${end || start}">${text}</button>`;
+    },
+  },
+});
+
 function toHtml(markdown) {
-  return markdown ? DOMPurify.sanitize(marked.parse(markdown)) : "";
+  return markdown
+    ? DOMPurify.sanitize(markedWithLineAnchors.parse(markdown))
+    : "";
 }
 
 export default function Note(props) {
@@ -18,6 +40,18 @@ export default function Note(props) {
   );
 
   const snippetHtml = createMemo(() => toHtml(editable.current().annotation));
+
+  // Delegated click handler for the "#L32-L35" line-anchor buttons inside
+  // the rendered markdown (event delegation, since content set via
+  // innerHTML can't carry Solid event handlers directly).
+  const handlePreviewClick = (e) => {
+    const button = e.target.closest(".line-anchor");
+    if (!button) return;
+    props.onLineClick?.(
+      Number(button.dataset.lineStart),
+      Number(button.dataset.lineEnd),
+    );
+  };
 
   const handleSave = async () => {
     try {
@@ -48,7 +82,11 @@ export default function Note(props) {
                 when={editable.current().annotation}
                 fallback={<p class="opacity-70">No notes yet.</p>}
               >
-                <div class="markdown" innerHTML={snippetHtml()} />
+                <div
+                  class="markdown"
+                  innerHTML={snippetHtml()}
+                  onClick={handlePreviewClick}
+                />
               </Show>
             </div>
           }

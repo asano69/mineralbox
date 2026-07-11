@@ -16,6 +16,17 @@ export default function Specimen() {
   const params = useParams();
   const [selectedSnippetId, setSelectedSnippetId] = createSignal(null);
 
+  // Range of lines to highlight in Snippet's editor, set by clicking a
+  // "#L32-L35" line-anchor link in Note's preview. Cleared whenever the
+  // selected snippet changes, since a highlight only makes sense for the
+  // snippet it was set from.
+  const [highlightRange, setHighlightRange] = createSignal(null);
+
+  const handleSelectSnippet = (id) => {
+    setSelectedSnippetId(id);
+    setHighlightRange(null);
+  };
+
   const [snippets, { mutate: mutateSnippets }] = createResource(
     () => params.specimenId,
     (specimenId) =>
@@ -65,17 +76,25 @@ export default function Specimen() {
           <Directory
             snippets={snippets() ?? []}
             selectedId={selectedSnippetId()}
-            onSelect={setSelectedSnippetId}
+            onSelect={handleSelectSnippet}
             specimenId={params.specimenId}
             onCreated={handleSnippetCreated}
             onDeleted={handleSnippetDeleted}
           />
         </aside>
         <div class="flex-1 min-h-0">
-          <Snippet snippet={selectedSnippet()} onSaved={handleSnippetSaved} />
+          <Snippet
+            snippet={selectedSnippet()}
+            highlightRange={highlightRange()}
+            onSaved={handleSnippetSaved}
+          />
         </div>
         <div class="flex-1 min-h-0">
-          <Note snippet={selectedSnippet()} onSaved={handleSnippetSaved} />
+          <Note
+            snippet={selectedSnippet()}
+            onSaved={handleSnippetSaved}
+            onLineClick={(start, end) => setHighlightRange({ start, end })}
+          />
         </div>
       </div>
     </div>
