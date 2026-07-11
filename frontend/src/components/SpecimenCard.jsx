@@ -18,7 +18,8 @@ export default function SpecimenCard(props) {
     props.specimen.description ?? "",
   );
   const [draft, setDraft] = createSignal(current());
-  const [draftDescription, setDraftDescription] = createSignal(currentDescription());
+  const [draftDescription, setDraftDescription] =
+    createSignal(currentDescription());
   const [saving, setSaving] = createSignal(false);
   const [error, setError] = createSignal("");
 
@@ -53,7 +54,7 @@ export default function SpecimenCard(props) {
     setError("");
     setEditing(false);
   };
-const handleDelete = async (e) => {
+  const handleDelete = async (e) => {
     e.preventDefault();
     e.stopPropagation();
     if (!window.confirm("Delete this specimen? This cannot be undone.")) return;
@@ -68,17 +69,18 @@ const handleDelete = async (e) => {
     }
   };
 
- 
   const handleSave = async (e) => {
     e.preventDefault();
     e.stopPropagation();
     setSaving(true);
     setError("");
     try {
-      const updated = await pb.collection("specimens").update(props.specimen.id, {
-        label: draft(),
-        description: draftDescription(),
-      });
+      const updated = await pb
+        .collection("specimens")
+        .update(props.specimen.id, {
+          label: draft(),
+          description: draftDescription(),
+        });
       setCurrent(updated.label);
       setCurrentDescription(updated.description);
       props.onSaved?.(updated);
@@ -90,12 +92,12 @@ const handleDelete = async (e) => {
     }
   };
 
-// ドラッグ開始時に specimen の id を dataTransfer に積む。
-// 独自の mime type にしておくことで、他のドラッグ&ドロップ(画像など)と混同しない。
-const handleDragStart = (e) => {
-  e.dataTransfer.setData("application/x-specimen-id", props.specimen.id);
-  e.dataTransfer.effectAllowed = "move";
-};
+  // ドラッグ開始時に specimen の id を dataTransfer に積む。
+  // 独自の mime type にしておくことで、他のドラッグ&ドロップ(画像など)と混同しない。
+  const handleDragStart = (e) => {
+    e.dataTransfer.setData("application/x-specimen-id", props.specimen.id);
+    e.dataTransfer.effectAllowed = "move";
+  };
 
   return (
     <Show
@@ -106,9 +108,7 @@ const handleDragStart = (e) => {
           draggable="true"
           onDragStart={handleDragStart}
           class="flex flex-col gap-2 rounded-md border border-[var(--color-border-soft)] bg-[var(--color-field)] px-4 py-3 shadow-[0_1px_3px_0_var(--color-shadow)] transition-colors hover:bg-[var(--color-hover-bg)]"
-
         >
-
           <div class="flex items-center justify-between gap-2">
             <p class="font-semibold">{current() || "(untitled)"}</p>
             <button type="button" class="btn" onClick={startEditing}>
@@ -116,7 +116,9 @@ const handleDragStart = (e) => {
             </button>
           </div>
           {currentDescription() && (
-            <p class="text-sm opacity-70 line-clamp-3">{currentDescription()}</p>
+            <p class="text-sm opacity-70 line-clamp-3">
+              {currentDescription()}
+            </p>
           )}
         </A>
       }
@@ -134,7 +136,7 @@ const handleDragStart = (e) => {
           rows="3"
           class="resize-none rounded-md border border-[var(--color-border-soft)] bg-[var(--color-bg)] px-2 py-1 text-sm text-[var(--color-text)]"
         />
-    <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3">
           <button
             type="button"
             class="btn"
@@ -143,7 +145,12 @@ const handleDragStart = (e) => {
           >
             {saving() ? "Saving…" : "Save"}
           </button>
-          <button type="button" class="btn" disabled={saving()} onClick={handleCancel}>
+          <button
+            type="button"
+            class="btn"
+            disabled={saving()}
+            onClick={handleCancel}
+          >
             Reset
           </button>
           <button
@@ -156,7 +163,6 @@ const handleDragStart = (e) => {
           </button>
           {error() && <p class="text-sm text-[#dc3545]">{error()}</p>}
         </div>
-      
       </div>
     </Show>
   );

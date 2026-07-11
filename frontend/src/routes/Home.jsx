@@ -52,39 +52,41 @@ export default function Home() {
     mutate((prev) => (prev ?? []).filter((s) => s.id !== deletedId));
   };
 
-
-
   // SpecimenCard から BoxList へドラッグ&ドロップされたときに呼ばれる。
-// specimen の box を張り替え、現在絞り込み中の box から外れた場合は
-// ローカルのリストからも取り除く（再フェッチはしない）。
-const handleDropSpecimen = async (specimenId, boxId) => {
-  const specimen = (specimens() ?? []).find((s) => s.id === specimenId);
-  if (!specimen || specimen.box === boxId) return; // 同じboxへのドロップは何もしない
+  // specimen の box を張り替え、現在絞り込み中の box から外れた場合は
+  // ローカルのリストからも取り除く（再フェッチはしない）。
+  const handleDropSpecimen = async (specimenId, boxId) => {
+    const specimen = (specimens() ?? []).find((s) => s.id === specimenId);
+    if (!specimen || specimen.box === boxId) return; // 同じboxへのドロップは何もしない
 
-  try {
-    const updated = await pb
-      .collection("specimens")
-      .update(specimenId, { box: boxId }, { expand: "box" });
+    try {
+      const updated = await pb
+        .collection("specimens")
+        .update(specimenId, { box: boxId }, { expand: "box" });
 
-    mutate((prev) => {
-      const list = (prev ?? []).map((s) =>
-        s.id === updated.id ? { ...s, ...updated } : s,
-      );
-      const stillVisible = !selectedBoxId() || updated.box === selectedBoxId();
-      return stillVisible ? list : list.filter((s) => s.id !== updated.id);
-    });
-  } catch {
-    // 必要ならここでエラー表示用のsignalを立てる
-  }
-};
-
+      mutate((prev) => {
+        const list = (prev ?? []).map((s) =>
+          s.id === updated.id ? { ...s, ...updated } : s,
+        );
+        const stillVisible =
+          !selectedBoxId() || updated.box === selectedBoxId();
+        return stillVisible ? list : list.filter((s) => s.id !== updated.id);
+      });
+    } catch {
+      // 必要ならここでエラー表示用のsignalを立てる
+    }
+  };
 
   return (
     <div class="flex min-h-screen w-full flex-col gap-6 bg-[var(--color-bg)] px-6 py-6 text-[var(--color-text)]">
       <NavBar />
       <div class="flex flex-col gap-8 md:flex-row">
         <aside class="w-full shrink-0 md:w-56">
-          <BoxList selectedId={selectedBoxId()} onSelect={setSelectedBoxId} onDropSpecimen={handleDropSpecimen} />
+          <BoxList
+            selectedId={selectedBoxId()}
+            onSelect={setSelectedBoxId}
+            onDropSpecimen={handleDropSpecimen}
+          />
         </aside>
         <div class="flex flex-1 flex-col gap-4">
           <button
@@ -96,7 +98,7 @@ const handleDropSpecimen = async (specimenId, boxId) => {
           >
             New Specimen
           </button>
-    <div class="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4 content-start">
+          <div class="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4 content-start">
             <Show
               when={(specimens() ?? []).length > 0}
               fallback={<p class="opacity-70">No specimens found.</p>}

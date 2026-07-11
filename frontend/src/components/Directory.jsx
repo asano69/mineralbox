@@ -32,11 +32,17 @@ function TreeNode(props) {
       when={props.node.snippet}
       fallback={
         <li>
-          <p class="px-2 py-1 text-sm font-semibold opacity-60">{props.node.name}</p>
+          <p class="px-2 py-1 text-sm font-semibold opacity-60">
+            {props.node.name}
+          </p>
           <ul class="ml-2 flex flex-col gap-1 border-l border-[var(--color-border-soft)] pl-2">
             <For each={Object.values(props.node.children)}>
               {(child) => (
-                <TreeNode node={child} selectedId={props.selectedId} onSelect={props.onSelect} />
+                <TreeNode
+                  node={child}
+                  selectedId={props.selectedId}
+                  onSelect={props.onSelect}
+                />
               )}
             </For>
           </ul>
@@ -94,30 +100,32 @@ export default function Directory(props) {
     props.onDeleted?.(props.selectedId);
   };
 
-return (
+  return (
     <div class="flex flex-col gap-2">
-
       <ul class="flex flex-col gap-1">
         <For each={Object.values(tree().children)}>
           {(node) => (
-            <TreeNode node={node} selectedId={props.selectedId} onSelect={props.onSelect} />
+            <TreeNode
+              node={node}
+              selectedId={props.selectedId}
+              onSelect={props.onSelect}
+            />
           )}
         </For>
       </ul>
-  <div>
+      <div>
         <button type="button" class="btn" onClick={handleCreate}>
-        New Snippet
-      </button>
-      <button
-        type="button"
-        class="btn"
-        disabled={!props.selectedId}
-        onClick={handleDelete}
-      >
-        Delete Snippet
-      </button>
-  </div>
+          New Snippet
+        </button>
+        <button
+          type="button"
+          class="btn"
+          disabled={!props.selectedId}
+          onClick={handleDelete}
+        >
+          Delete Snippet
+        </button>
+      </div>
     </div>
   );
-
 }

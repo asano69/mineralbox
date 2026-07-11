@@ -1,4 +1,10 @@
-import { createResource, createSignal, createEffect, For, Show } from "solid-js";
+import {
+  createResource,
+  createSignal,
+  createEffect,
+  For,
+  Show,
+} from "solid-js";
 import pb from "../lib/pb";
 
 // One row of the box list while in edit mode: an inline-editable name
@@ -29,7 +35,9 @@ function BoxRow(props) {
     setSaving(true);
     setError("");
     try {
-      const updated = await pb.collection("boxes").update(props.box.id, { name: trimmed });
+      const updated = await pb
+        .collection("boxes")
+        .update(props.box.id, { name: trimmed });
       props.onRenamed(updated);
     } catch {
       setName(props.box.name);
@@ -40,7 +48,12 @@ function BoxRow(props) {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm(`Delete box "${props.box.name}"? Its specimens will remain unboxed.`)) return;
+    if (
+      !window.confirm(
+        `Delete box "${props.box.name}"? Its specimens will remain unboxed.`,
+      )
+    )
+      return;
     setSaving(true);
     setError("");
     try {
@@ -63,7 +76,12 @@ function BoxRow(props) {
           disabled={saving()}
           class="flex-1 rounded-md border border-[var(--color-border-soft)] bg-[var(--color-bg)] px-2 py-1 text-[var(--color-text)]"
         />
-        <button type="button" class="btn" disabled={saving()} onClick={handleDelete}>
+        <button
+          type="button"
+          class="btn"
+          disabled={saving()}
+          onClick={handleDelete}
+        >
           Delete
         </button>
       </div>
@@ -90,16 +108,17 @@ export default function BoxList(props) {
   const [saving, setSaving] = createSignal(false);
   const [error, setError] = createSignal("");
 
-const itemClass = (active, dragOver) =>
-  `w-full rounded-md border px-3 py-2 text-left transition-colors ${
-    dragOver
-      ? "border-[var(--color-border)] bg-[var(--color-active-bg)]"
-      : active
-        ? "border-[var(--color-border)] bg-[var(--color-hover-bg)]"
-        : "border-[var(--color-border-soft)] bg-[var(--color-field)] hover:bg-[var(--color-hover-bg)]"
-  }`;
+  const itemClass = (active, dragOver) =>
+    `w-full rounded-md border px-3 py-2 text-left transition-colors ${
+      dragOver
+        ? "border-[var(--color-border)] bg-[var(--color-active-bg)]"
+        : active
+          ? "border-[var(--color-border)] bg-[var(--color-hover-bg)]"
+          : "border-[var(--color-border-soft)] bg-[var(--color-field)] hover:bg-[var(--color-hover-bg)]"
+    }`;
 
-  const sortByName = (list) => [...list].sort((a, b) => a.name.localeCompare(b.name));
+  const sortByName = (list) =>
+    [...list].sort((a, b) => a.name.localeCompare(b.name));
 
   const startCreating = () => {
     setNewName("");
@@ -149,22 +168,21 @@ const itemClass = (active, dragOver) =>
     if (props.selectedId === deletedId) props.onSelect(null);
   };
 
-
   // ドラッグ中のハイライト表示用
-const [dragOverId, setDragOverId] = createSignal(null);
+  const [dragOverId, setDragOverId] = createSignal(null);
 
-const handleDragOver = (e) => {
-  e.preventDefault(); // これがないと onDrop が発火しない
-  e.dataTransfer.dropEffect = "move";
-};
+  const handleDragOver = (e) => {
+    e.preventDefault(); // これがないと onDrop が発火しない
+    e.dataTransfer.dropEffect = "move";
+  };
 
-const handleDrop = (boxId) => (e) => {
-  e.preventDefault();
-  setDragOverId(null);
-  const specimenId = e.dataTransfer.getData("application/x-specimen-id");
-  if (!specimenId) return;
-  props.onDropSpecimen?.(specimenId, boxId);
-};
+  const handleDrop = (boxId) => (e) => {
+    e.preventDefault();
+    setDragOverId(null);
+    const specimenId = e.dataTransfer.getData("application/x-specimen-id");
+    if (!specimenId) return;
+    props.onDropSpecimen?.(specimenId, boxId);
+  };
   return (
     <div class="flex flex-col gap-2">
       <ul class="flex flex-col gap-2">
@@ -180,39 +198,44 @@ const handleDrop = (boxId) => (e) => {
         <Show
           when={editMode()}
           fallback={
-     <For each={boxes() ?? []}>
-  {(box) => (
-    <li>
-      <button
-        type="button"
-        class={itemClass(props.selectedId === box.id, dragOverId() === box.id)}
-        onClick={() => props.onSelect(box.id)}
-        onDragOver={handleDragOver}
-        onDragEnter={() => setDragOverId(box.id)}
-        onDragLeave={() =>
-          setDragOverId((id) => (id === box.id ? null : id))
-        }
-        onDrop={handleDrop(box.id)}
-      >
-        {box.name}
-      </button>
-    </li>
-  )}
-</For>
+            <For each={boxes() ?? []}>
+              {(box) => (
+                <li>
+                  <button
+                    type="button"
+                    class={itemClass(
+                      props.selectedId === box.id,
+                      dragOverId() === box.id,
+                    )}
+                    onClick={() => props.onSelect(box.id)}
+                    onDragOver={handleDragOver}
+                    onDragEnter={() => setDragOverId(box.id)}
+                    onDragLeave={() =>
+                      setDragOverId((id) => (id === box.id ? null : id))
+                    }
+                    onDrop={handleDrop(box.id)}
+                  >
+                    {box.name}
+                  </button>
+                </li>
+              )}
+            </For>
           }
         >
           <For each={boxes() ?? []}>
             {(box) => (
-              <BoxRow box={box} onRenamed={handleRenamed} onDeleted={handleDeleted} />
+              <BoxRow
+                box={box}
+                onRenamed={handleRenamed}
+                onDeleted={handleDeleted}
+              />
             )}
           </For>
         </Show>
       </ul>
 
       <div class="flex items-center gap-3">
-        <Show
-          when={!creating()}
-        >
+        <Show when={!creating()}>
           <button type="button" class="btn self-start" onClick={startCreating}>
             New
           </button>
@@ -244,7 +267,12 @@ const handleDrop = (boxId) => (e) => {
             >
               {saving() ? "Creating…" : "Create"}
             </button>
-            <button type="button" class="btn" disabled={saving()} onClick={handleCancel}>
+            <button
+              type="button"
+              class="btn"
+              disabled={saving()}
+              onClick={handleCancel}
+            >
               Cancel
             </button>
           </div>

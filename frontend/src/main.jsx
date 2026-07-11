@@ -17,7 +17,9 @@ import pb from "./lib/pb";
 // both login and logout.
 function AuthGate(props) {
   const [authed, setAuthed] = createSignal(pb.authStore.isValid);
-  const unsubscribe = pb.authStore.onChange(() => setAuthed(pb.authStore.isValid));
+  const unsubscribe = pb.authStore.onChange(() =>
+    setAuthed(pb.authStore.isValid),
+  );
   onCleanup(unsubscribe);
 
   return (
@@ -32,11 +34,11 @@ render(
     <AuthGate>
       <Router>
         <Route path="/" component={Home} />
-  
+
         <Route path="/settings" component={Settings} />
         {/* Dynamic box/specimen routes go last so they never shadow the
             static routes above. */}
-  
+
         <Route path="/:boxName/:specimenId" component={Specimen} />
       </Router>
     </AuthGate>

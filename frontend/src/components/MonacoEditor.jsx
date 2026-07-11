@@ -8,7 +8,12 @@ import * as monaco from "monaco-editor";
 import "../lib/monacoWorkers";
 
 // Maps this app's lang select values to Monaco's language ids.
-const LANG_MAP = { go: "go", javascript: "javascript", sql: "sql", markdown: "markdown" };
+const LANG_MAP = {
+  go: "go",
+  javascript: "javascript",
+  sql: "sql",
+  markdown: "markdown",
+};
 
 export default function MonacoEditor(props) {
   let container;
@@ -60,7 +65,7 @@ export default function MonacoEditor(props) {
   return (
     <div
       ref={container}
-       class="min-h-0 flex-1 rounded-md border border-[var(--color-border-soft)]"
+      class="min-h-0 flex-1 rounded-md border border-[var(--color-border-soft)]"
     />
   );
 }

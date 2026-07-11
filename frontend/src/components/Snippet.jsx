@@ -26,7 +26,9 @@ export default function Snippet(props) {
   // editing and are discarded on Save/Reset.
   const [current, setCurrent] = createSignal(props.snippet?.content ?? "");
   const [draft, setDraft] = createSignal(current());
-  const [currentPathname, setCurrentPathname] = createSignal(props.snippet?.pathname ?? "");
+  const [currentPathname, setCurrentPathname] = createSignal(
+    props.snippet?.pathname ?? "",
+  );
   const [draftPathname, setDraftPathname] = createSignal(currentPathname());
   const [saving, setSaving] = createSignal(false);
   const [error, setError] = createSignal("");
@@ -48,7 +50,8 @@ export default function Snippet(props) {
     return id;
   });
 
-  const dirty = () => draft() !== current() || draftPathname() !== currentPathname();
+  const dirty = () =>
+    draft() !== current() || draftPathname() !== currentPathname();
 
   const startEditing = () => {
     setDraft(current());
@@ -71,7 +74,10 @@ export default function Snippet(props) {
     try {
       const updated = await pb
         .collection("snippets")
-        .update(props.snippet.id, { content: draft(), pathname: draftPathname() });
+        .update(props.snippet.id, {
+          content: draft(),
+          pathname: draftPathname(),
+        });
       setCurrent(updated.content);
       setCurrentPathname(updated.pathname);
       props.onSaved?.(updated);
@@ -92,7 +98,9 @@ export default function Snippet(props) {
         <div class="mb-2 flex items-center justify-between gap-2">
           <Show
             when={editing()}
-            fallback={<p class="font-mono text-sm opacity-70">{currentPathname()}</p>}
+            fallback={
+              <p class="font-mono text-sm opacity-70">{currentPathname()}</p>
+            }
           >
             <input
               type="text"
