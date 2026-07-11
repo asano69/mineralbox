@@ -5,18 +5,18 @@ import DOMPurify from "dompurify";
 import MonacoEditor from "./MonacoEditor";
 import pb from "../lib/pb";
 import { createEditableRecord } from "../lib/createEditableRecord";
-import { parseLineAnchor, colorForRange, textColorForRange } from "../lib/lineAnchors";
+import { parseLineAnchor, colorForRange } from "../lib/lineAnchors";
 
-// Renders a line-anchor as a button, colored the same way MonacoEditor
-// colors the referenced lines (see lib/lineAnchors.js), so the preview
-// and the editor always agree on which range means which color. Both
-// colors read the shared light/dark signal, so the button stays legible
-// in either mode.
+
+// Renders a line-anchor as a button. The tint is passed as a CSS custom
+// property (--anchor-tint) rather than a plain background-color, so the
+// glass-like gradient/blur/shadow layering lives entirely in .line-anchor
+// (style.css) instead of being duplicated here. The label is wrapped in
+// its own span so it can sit above the glossy overlay pseudo-element via
+// z-index (see style.css).
 function lineAnchorButton(start, end, label) {
-  const range = { start, end };
-  const background = colorForRange(range);
-  const color = textColorForRange(range);
-  return `<button type="button" class="line-anchor" style="background-color:${background};color:${color}" data-line-start="${start}" data-line-end="${end}">${label}</button>`;
+  const tint = colorForRange({ start, end });
+  return `<button type="button" class="line-anchor" style="--anchor-tint:${tint}" data-line-start="${start}" data-line-end="${end}"><span class="line-anchor-label">${label}</span></button>`;
 }
 
 // A dedicated Marked instance keeps this override local to Note.jsx

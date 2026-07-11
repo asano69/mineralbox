@@ -88,13 +88,17 @@ function meanHue(hues) {
   return deg < 0 ? deg + 360 : deg;
 }
 
-// Background color for a line-anchor button in Note.jsx's preview.
-// Lightness follows isDarkMode() so the badge stays visible against
-// both a white and a black page background; textColorForRange below
-// picks a matching text color so contrast holds in both cases.
+// Background tint for a line-anchor button in Note.jsx's preview. This is
+// deliberately translucent (not opaque) so that, combined with the
+// backdrop-filter blur and gloss overlay in .line-anchor (style.css), the
+// button reads like a small piece of colored glass rather than a flat,
+// solid-painted badge. Lightness is tuned per light/dark mode so the tint
+// stays visible against both a white and a black page background; text
+// color is no longer derived per-button, since var(--color-text) already
+// contrasts fine against a translucent, blurred tint.
 export function colorForRange(range) {
-  const lightness = isDarkMode() ? 60 : 38;
-  return `hsl(${hueForRange(range)}, 65%, ${lightness}%)`;
+  const lightness = isDarkMode() ? 55 : 60;
+  return `hsla(${hueForRange(range)}, 80%, ${lightness}%, 0.40)`;
 }
 
 // Text color to pair with colorForRange's background: dark mode's
