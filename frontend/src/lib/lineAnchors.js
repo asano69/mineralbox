@@ -4,6 +4,7 @@
 // buttons) and the code editor (MonacoEditor.jsx, which highlights the
 // referenced lines). Keeping the color logic in one place is what
 // guarantees the button hue and the editor highlight always agree.
+import { createSignal } from "solid-js";
 
 // Matches a line-anchor reference: "#L32", "#L32-L35", or "#L32-35"
 // (the second "L" is optional). Not anchored at the end, since bare
@@ -30,6 +31,23 @@ export function findLineAnchors(markdown) {
   return matches.map(parseLineAnchor).filter(Boolean);
 }
 
+// --- Light/dark mode -----------------------------------------------------
+//
+// Single shared signal for the OS/browser color scheme, so Note.jsx's
+// button colors and MonacoEditor's theme/highlight colors always react
+// to the same source instead of each component polling matchMedia on
+// its own.
+const prefersDark =
+  typeof window !== "undefined"
+    ? window.matchMedia("(prefers-color-scheme: dark)")
+    : null;
+
+const [isDarkMode, setIsDarkMode] = createSignal(prefersDark?.matches ?? false);
+
+prefersDark?.addEventListener("change", (e) => setIsDarkMode(e.matches));
+
+export { isDarkMode };
+
 // --- Color ---------------------------------------------------------------
 //
 // Every range gets a hue by hashing "start-end", so the same range
@@ -55,9 +73,9 @@ function hueForRange({ start, end }) {
 
 // Circular mean of several hues (0-360), used when multiple ranges
 // cover the same line in the editor. Averaging hue this way keeps the
-// result a real, saturated color; averaging RGB channels (the previous
-// approach) washes toward gray/white as more colors overlap, which is
-// exactly the illegibility problem this replaces.
+// result a real, saturated color; averaging RGB channels washes toward
+// gray/white as more colors overlap, which is exactly the illegibility
+// problem this replaces.
 function meanHue(hues) {
   let sin = 0;
   let cos = 0;
@@ -70,12 +88,20 @@ function meanHue(hues) {
   return deg < 0 ? deg + 360 : deg;
 }
 
-// Solid color for a line-anchor button in Note.jsx's preview. Rendered
-// with white text (see style.css), so saturation/lightness are fixed at
-// values that keep good contrast against white regardless of the
-// surrounding light/dark page background.
+// Background color for a line-anchor button in Note.jsx's preview.
+// Lightness follows isDarkMode() so the badge stays visible against
+// both a white and a black page background; textColorForRange below
+// picks a matching text color so contrast holds in both cases.
 export function colorForRange(range) {
-  return `hsl(${hueForRange(range)}, 65%, 42%)`;
+  const lightness = isDarkMode() ? 60 : 38;
+  return `hsl(${hueForRange(range)}, 65%, ${lightness}%)`;
+}
+
+// Text color to pair with colorForRange's background: dark mode's
+// lighter badge needs dark text, light mode's darker badge needs light
+// text.
+export function textColorForRange() {
+  return isDarkMode() ? "#1a1a1a" : "#ffffff";
 }
 
 // Background color for a Monaco line highlight covering `line`, or null
@@ -84,11 +110,11 @@ export function colorForRange(range) {
 // light mode, near-black in dark mode) instead of a fixed mid-tone, and
 // a low alpha lets the syntax-highlighted code show through, so the
 // line reads as a soft tint rather than a block that fights the text.
-function lineHighlightColor(ranges, line, dark) {
+function lineHighlightColor(ranges, line) {
   const covering = ranges.filter((r) => line >= r.start && line <= r.end);
   if (covering.length === 0) return null;
   const hue = meanHue(covering.map(hueForRange));
-  const lightness = dark ? 25 : 85;
+  const lightness = isDarkMode() ? 25 : 85;
   return `hsla(${hue}, 70%, ${lightness}%, 0.35)`;
 }
 
@@ -117,9 +143,9 @@ function classNameForColor(color) {
 // Builds whole-line decorations covering every line 1..lineCount, one
 // decoration per contiguous band of lines that resolve to the same
 // (possibly hue-blended) color. Lines covered by no range get no
-// decoration. `dark` selects the light/dark-mode lightness in
-// lineHighlightColor above.
-export function decorationsForRanges(monaco, lineCount, ranges, dark) {
+// decoration. Reads isDarkMode() itself (via lineHighlightColor), so
+// callers don't need to pass light/dark through.
+export function decorationsForRanges(monaco, lineCount, ranges) {
   const decorations = [];
   let bandStart = null;
   let bandColor = null;
@@ -137,7 +163,7 @@ export function decorationsForRanges(monaco, lineCount, ranges, dark) {
   };
 
   for (let line = 1; line <= lineCount; line++) {
-    const color = lineHighlightColor(ranges, line, dark);
+    const color = lineHighlightColor(ranges, line);
     if (color !== bandColor) {
       flush(line - 1);
       bandStart = line;

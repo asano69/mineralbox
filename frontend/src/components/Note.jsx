@@ -1,19 +1,22 @@
 // frontend/src/components/Note.jsx
-// frontend/src/components/Note.jsx
 import { createMemo, Show } from "solid-js";
 import { Marked } from "marked";
 import DOMPurify from "dompurify";
 import MonacoEditor from "./MonacoEditor";
 import pb from "../lib/pb";
 import { createEditableRecord } from "../lib/createEditableRecord";
-import { parseLineAnchor, colorForRange } from "../lib/lineAnchors";
+import { parseLineAnchor, colorForRange, textColorForRange } from "../lib/lineAnchors";
 
 // Renders a line-anchor as a button, colored the same way MonacoEditor
 // colors the referenced lines (see lib/lineAnchors.js), so the preview
-// and the editor always agree on which range means which color.
+// and the editor always agree on which range means which color. Both
+// colors read the shared light/dark signal, so the button stays legible
+// in either mode.
 function lineAnchorButton(start, end, label) {
-  const color = colorForRange({ start, end });
-  return `<button type="button" class="line-anchor" style="background-color:${color}" data-line-start="${start}" data-line-end="${end}">${label}</button>`;
+  const range = { start, end };
+  const background = colorForRange(range);
+  const color = textColorForRange(range);
+  return `<button type="button" class="line-anchor" style="background-color:${background};color:${color}" data-line-start="${start}" data-line-end="${end}">${label}</button>`;
 }
 
 // A dedicated Marked instance keeps this override local to Note.jsx
@@ -70,7 +73,7 @@ export default function Note(props) {
     (patch) => pb.collection("snippets").update(props.snippet.id, patch),
   );
 
-  const snippetHtml = createMemo(() => toHtml(editable.current().annotation));
+ const snippetHtml = createMemo(() => toHtml(editable.current().annotation));
 
   // Delegated click handler for the "#L32-L35" line-anchor buttons inside
   // the rendered markdown (event delegation, since content set via

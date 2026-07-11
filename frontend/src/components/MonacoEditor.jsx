@@ -3,10 +3,10 @@
 // instance on the container div and keeps it in sync with props.value,
 // props.lang, and props.readOnly. Edits are reported back via
 // props.onChange(newValue).
-import { createSignal, onMount, onCleanup, createEffect } from "solid-js";
+import { onMount, onCleanup, createEffect } from "solid-js";
 import * as monaco from "monaco-editor";
 import "../lib/monacoWorkers";
-import { decorationsForRanges } from "../lib/lineAnchors";
+import { decorationsForRanges, isDarkMode } from "../lib/lineAnchors";
 
 // Maps this app's lang select values to Monaco's language ids.
 const LANG_MAP = {
@@ -21,36 +21,23 @@ export default function MonacoEditor(props) {
   let editor;
   let anchorDecorations;
 
-  // Tracked as a signal (not just a local variable) because the line-anchor
-  // highlight's lightness depends on it (see lineAnchors.js), so switching
-  // color scheme mid-session needs to trigger a decoration refresh too.
-  const [dark, setDark] = createSignal(false);
-
-  // Recomputes the persistent line-anchor highlight from props.lineAnchors,
-  // dark(), and the editor's current line count. Called both reactively
-  // (below) and imperatively after any content change, since editing the
-  // code can shift how many lines exist.
+  // Recomputes the persistent line-anchor highlight from props.lineAnchors
+  // and the editor's current line count. Called both reactively (when
+  // lineAnchors or the color scheme changes) and imperatively after any
+  // content change, since editing the code can shift how many lines exist.
   const refreshAnchorDecorations = () => {
     if (!editor) return;
     const ranges = props.lineAnchors ?? [];
     anchorDecorations.set(
-      decorationsForRanges(
-        monaco,
-        editor.getModel().getLineCount(),
-        ranges,
-        dark(),
-      ),
+      decorationsForRanges(monaco, editor.getModel().getLineCount(), ranges),
     );
   };
 
   onMount(() => {
-    const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    setDark(darkQuery.matches);
-
     editor = monaco.editor.create(container, {
       value: props.value ?? "",
       language: LANG_MAP[props.lang] ?? "plaintext",
-      theme: dark() ? "vs-dark" : "vs",
+      theme: isDarkMode() ? "vs-dark" : "vs",
       automaticLayout: true,
       minimap: { enabled: false },
       fontSize: 13,
@@ -65,15 +52,6 @@ export default function MonacoEditor(props) {
       if (value !== props.value) props.onChange?.(value);
       refreshAnchorDecorations();
     });
-
-    // Switch the editor's theme whenever the OS/browser color scheme
-    // changes, instead of only reading it once at creation time.
-    const handleThemeChange = (e) => {
-      setDark(e.matches);
-      monaco.editor.setTheme(e.matches ? "vs-dark" : "vs");
-    };
-    darkQuery.addEventListener("change", handleThemeChange);
-    onCleanup(() => darkQuery.removeEventListener("change", handleThemeChange));
   });
 
   // Keep the model's language in sync when the user switches the lang select.
@@ -97,12 +75,20 @@ export default function MonacoEditor(props) {
     }
   });
 
+  // Switch Monaco's own theme whenever the shared light/dark signal
+  // changes (see lib/lineAnchors.js), instead of listening to matchMedia
+  // here directly. monaco.editor.setTheme is global, matching the
+  // previous per-instance matchMedia listener's behavior.
+  createEffect(() => {
+    if (editor) monaco.editor.setTheme(isDarkMode() ? "vs-dark" : "vs");
+  });
+
   // Always highlight every "#L23" / "#L32-L34" line-anchor mentioned in
   // the snippet's annotation, not just the one most recently clicked, and
   // recompute whenever the color scheme flips (light <-> dark).
   createEffect(() => {
     props.lineAnchors; // track
-    dark(); // track
+    isDarkMode(); // track
     refreshAnchorDecorations();
   });
 
