@@ -32,6 +32,14 @@ const handleSnippetCreated = (created) => {
   mutateSnippets((prev) => [...(prev ?? []), created]);
 };
 
+// Removes a deleted snippet from the local list and clears the
+// selection; Directory's existing "select the first snippet" effect
+// then picks a replacement automatically if one remains.
+const handleSnippetDeleted = (deletedId) => {
+  mutateSnippets((prev) => (prev ?? []).filter((s) => s.id !== deletedId));
+  setSelectedSnippetId(null);
+};
+
 // Keeps the Directory tree in sync when Snippet/Note save a change,
 // without re-fetching the whole list from the server.
 const handleSnippetSaved = (updated) => {
@@ -63,6 +71,7 @@ const handleSnippetSaved = (updated) => {
   onSelect={setSelectedSnippetId}
   specimenId={params.specimenId}
   onCreated={handleSnippetCreated}
+  onDeleted={handleSnippetDeleted}
 />
             
         </aside>

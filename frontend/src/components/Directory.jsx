@@ -84,11 +84,19 @@ export default function Directory(props) {
     props.onSelect(created.id);
   };
 
-  return (
+  // Deletes the currently selected snippet after a simple confirmation.
+  // The parent (Specimen.jsx) owns the snippets list, so it's told via
+  // onDeleted to remove the record and clear the selection.
+  const handleDelete = async () => {
+    if (!props.selectedId) return;
+    if (!window.confirm("Delete this snippet?")) return;
+    await pb.collection("snippets").delete(props.selectedId);
+    props.onDeleted?.(props.selectedId);
+  };
+
+return (
     <div class="flex flex-col gap-2">
-      <button type="button" class="btn" onClick={handleCreate}>
-        New Snippet
-      </button>
+
       <ul class="flex flex-col gap-1">
         <For each={Object.values(tree().children)}>
           {(node) => (
@@ -96,6 +104,20 @@ export default function Directory(props) {
           )}
         </For>
       </ul>
+  <div>
+        <button type="button" class="btn" onClick={handleCreate}>
+        New Snippet
+      </button>
+      <button
+        type="button"
+        class="btn"
+        disabled={!props.selectedId}
+        onClick={handleDelete}
+      >
+        Delete Snippet
+      </button>
+  </div>
     </div>
   );
+
 }
