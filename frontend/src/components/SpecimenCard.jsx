@@ -90,7 +90,12 @@ const handleDelete = async (e) => {
     }
   };
 
-
+// ドラッグ開始時に specimen の id を dataTransfer に積む。
+// 独自の mime type にしておくことで、他のドラッグ&ドロップ(画像など)と混同しない。
+const handleDragStart = (e) => {
+  e.dataTransfer.setData("application/x-specimen-id", props.specimen.id);
+  e.dataTransfer.effectAllowed = "move";
+};
 
   return (
     <Show
@@ -98,8 +103,12 @@ const handleDelete = async (e) => {
       fallback={
         <A
           href={`/${props.boxName}/${props.specimen.id}`}
+          draggable="true"
+          onDragStart={handleDragStart}
           class="flex flex-col gap-2 rounded-md border border-[var(--color-border-soft)] bg-[var(--color-field)] px-4 py-3 shadow-[0_1px_3px_0_var(--color-shadow)] transition-colors hover:bg-[var(--color-hover-bg)]"
+
         >
+
           <div class="flex items-center justify-between gap-2">
             <p class="font-semibold">{current() || "(untitled)"}</p>
             <button type="button" class="btn" onClick={startEditing}>

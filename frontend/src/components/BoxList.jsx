@@ -90,12 +90,14 @@ export default function BoxList(props) {
   const [saving, setSaving] = createSignal(false);
   const [error, setError] = createSignal("");
 
-  const itemClass = (active) =>
-    `w-full rounded-md border px-3 py-2 text-left transition-colors ${
-      active
+const itemClass = (active, dragOver) =>
+  `w-full rounded-md border px-3 py-2 text-left transition-colors ${
+    dragOver
+      ? "border-[var(--color-border)] bg-[var(--color-active-bg)]"
+      : active
         ? "border-[var(--color-border)] bg-[var(--color-hover-bg)]"
         : "border-[var(--color-border-soft)] bg-[var(--color-field)] hover:bg-[var(--color-hover-bg)]"
-    }`;
+  }`;
 
   const sortByName = (list) => [...list].sort((a, b) => a.name.localeCompare(b.name));
 
@@ -147,6 +149,22 @@ export default function BoxList(props) {
     if (props.selectedId === deletedId) props.onSelect(null);
   };
 
+
+  // ドラッグ中のハイライト表示用
+const [dragOverId, setDragOverId] = createSignal(null);
+
+const handleDragOver = (e) => {
+  e.preventDefault(); // これがないと onDrop が発火しない
+  e.dataTransfer.dropEffect = "move";
+};
+
+const handleDrop = (boxId) => (e) => {
+  e.preventDefault();
+  setDragOverId(null);
+  const specimenId = e.dataTransfer.getData("application/x-specimen-id");
+  if (!specimenId) return;
+  props.onDropSpecimen?.(specimenId, boxId);
+};
   return (
     <div class="flex flex-col gap-2">
       <ul class="flex flex-col gap-2">
@@ -162,19 +180,25 @@ export default function BoxList(props) {
         <Show
           when={editMode()}
           fallback={
-            <For each={boxes() ?? []}>
-              {(box) => (
-                <li>
-                  <button
-                    type="button"
-                    class={itemClass(props.selectedId === box.id)}
-                    onClick={() => props.onSelect(box.id)}
-                  >
-                    {box.name}
-                  </button>
-                </li>
-              )}
-            </For>
+     <For each={boxes() ?? []}>
+  {(box) => (
+    <li>
+      <button
+        type="button"
+        class={itemClass(props.selectedId === box.id, dragOverId() === box.id)}
+        onClick={() => props.onSelect(box.id)}
+        onDragOver={handleDragOver}
+        onDragEnter={() => setDragOverId(box.id)}
+        onDragLeave={() =>
+          setDragOverId((id) => (id === box.id ? null : id))
+        }
+        onDrop={handleDrop(box.id)}
+      >
+        {box.name}
+      </button>
+    </li>
+  )}
+</For>
           }
         >
           <For each={boxes() ?? []}>
