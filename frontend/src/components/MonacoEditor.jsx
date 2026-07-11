@@ -20,12 +20,12 @@ export default function MonacoEditor(props) {
   let editor;
 
   onMount(() => {
+    const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
     editor = monaco.editor.create(container, {
       value: props.value ?? "",
       language: LANG_MAP[props.lang] ?? "plaintext",
-      theme: window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "vs-dark"
-        : "vs",
+      theme: darkQuery.matches ? "vs-dark" : "vs",
       automaticLayout: true,
       minimap: { enabled: false },
       fontSize: 13,
@@ -37,6 +37,14 @@ export default function MonacoEditor(props) {
       const value = editor.getValue();
       if (value !== props.value) props.onChange?.(value);
     });
+
+    // Switch the editor's theme whenever the OS/browser color scheme
+    // changes, instead of only reading it once at creation time.
+    const handleThemeChange = (e) => {
+      monaco.editor.setTheme(e.matches ? "vs-dark" : "vs");
+    };
+    darkQuery.addEventListener("change", handleThemeChange);
+    onCleanup(() => darkQuery.removeEventListener("change", handleThemeChange));
   });
 
   // Keep the model's language in sync when the user switches the lang select.
