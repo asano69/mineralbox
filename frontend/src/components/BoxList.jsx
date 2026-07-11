@@ -6,62 +6,43 @@ import {
   Show,
 } from "solid-js";
 import pb from "../lib/pb";
+import { createEditableRecord } from "../lib/createEditableRecord";
 
-// One row of the box list while in edit mode: an inline-editable name
-// field (saved on blur, reverted if empty/unchanged/failed) plus a
-// Delete button. Local draft state lives here, not in BoxList, so
-// editing one box's name never touches the others.
+
+
 function BoxRow(props) {
-  const [name, setName] = createSignal(props.box.name);
-  const [saving, setSaving] = createSignal(false);
-  const [error, setError] = createSignal("");
-
-  // Reset the draft whenever the underlying box identity changes (e.g.
-  // the list was refetched elsewhere) so a stale draft never lingers.
-  createEffect((prevId) => {
-    if (props.box.id !== prevId) {
-      setName(props.box.name);
-      setError("");
-    }
-    return props.box.id;
-  });
+  const editable = createEditableRecord(
+    () => props.box,
+    ["name"],
+    (patch) => pb.collection("boxes").update(props.box.id, patch),
+  );
 
   const handleBlur = async () => {
-    const trimmed = name().trim();
-    if (!trimmed || trimmed === props.box.name) {
-      setName(props.box.name);
+    const trimmed = editable.draft().name.trim();
+    if (!trimmed || trimmed === editable.current().name) {
+      editable.setField("name", editable.current().name);
       return;
     }
-    setSaving(true);
-    setError("");
     try {
-      const updated = await pb
-        .collection("boxes")
-        .update(props.box.id, { name: trimmed });
-      props.onRenamed(updated);
+      props.onRenamed(await editable.commit());
     } catch {
-      setName(props.box.name);
-      setError("Failed to rename. Name may already be in use.");
-    } finally {
-      setSaving(false);
+      editable.setField("name", editable.current().name);
+      editable.setError("Failed to rename. Name may already be in use.");
     }
   };
 
   const handleDelete = async () => {
     if (
       !window.confirm(
-        `Delete box "${props.box.name}"? Its specimens will remain unboxed.`,
+        `Delete box "${editable.current().name}"? Its specimens will remain unboxed.`,
       )
     )
       return;
-    setSaving(true);
-    setError("");
     try {
       await pb.collection("boxes").delete(props.box.id);
       props.onDeleted(props.box.id);
     } catch {
-      setError("Failed to delete the box.");
-      setSaving(false);
+      editable.setError("Failed to delete the box.");
     }
   };
 
@@ -70,26 +51,25 @@ function BoxRow(props) {
       <div class="flex items-center gap-2">
         <input
           type="text"
-          value={name()}
-          onInput={(e) => setName(e.target.value)}
+          value={editable.draft().name}
+          onInput={(e) => editable.setField("name", e.target.value)}
           onBlur={handleBlur}
-          disabled={saving()}
+          disabled={editable.saving()}
           class="flex-1 rounded-md border border-[var(--color-border-soft)] bg-[var(--color-bg)] px-2 py-1 text-[var(--color-text)]"
         />
         <button
           type="button"
           class="btn"
-          disabled={saving()}
+          disabled={editable.saving()}
           onClick={handleDelete}
         >
           Delete
         </button>
       </div>
-      {error() && <p class="text-sm text-[#dc3545]">{error()}</p>}
+      {editable.error() && <p class="text-sm text-[#dc3545]">{editable.error()}</p>}
     </li>
   );
 }
-
 // Stacked list of boxes, plus an "All specimens" entry to clear the
 // filter, a "New Box" form, and an "Edit Box" mode that turns every box
 // into an inline-renameable row with a Delete button. Clicking a box in
