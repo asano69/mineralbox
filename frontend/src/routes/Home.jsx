@@ -13,7 +13,7 @@ export default function Home() {
   // Wrapped in an object so the source is always truthy: createResource
   // skips the fetcher entirely when its source signal returns null, which
   // would otherwise stop specimens from loading when no box is selected.
-  const [specimens, { refetch }] = createResource(
+  const [specimens, { mutate }] = createResource(
     () => ({ boxId: selectedBoxId() }),
     ({ boxId }) =>
       pb.collection("specimens").getFullList({
@@ -25,13 +25,25 @@ export default function Home() {
       }),
   );
 
-  // Creates a new, mostly-empty specimen in the currently selected box.
-  // Requires a box to be selected since specimens.box is a required
-  // field; label/description etc. are filled in later via SpecimenInfo.
+  // Creates a new, mostly-empty specimen in the currently selected box and
+  // prepends it locally (matches the "-created" sort) instead of
+  // re-fetching the whole list. label/description are filled in later via
+  // SpecimenCard's own edit mode.
   const handleCreate = async () => {
     if (!selectedBoxId()) return;
-    await pb.collection("specimens").create({ box: selectedBoxId() });
-    refetch();
+    const created = await pb
+      .collection("specimens")
+      .create({ box: selectedBoxId() }, { expand: "box" });
+    mutate((prev) => [created, ...(prev ?? [])]);
+  };
+
+  // Keeps the grid in sync when a card saves an edit, without re-fetching
+  // the whole list. `updated` has no `expand`, so merging onto the
+  // existing record preserves its `expand.box`.
+  const handleSpecimenSaved = (updated) => {
+    mutate((prev) =>
+      (prev ?? []).map((s) => (s.id === updated.id ? { ...s, ...updated } : s)),
+    );
   };
 
   return (
@@ -51,7 +63,7 @@ export default function Home() {
           >
             New Specimen
           </button>
-          <div class="grid grid-cols-1 gap-4 content-start sm:grid-cols-2">
+    <div class="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4 content-start">
             <Show
               when={(specimens() ?? []).length > 0}
               fallback={<p class="opacity-70">No specimens found.</p>}
@@ -61,6 +73,7 @@ export default function Home() {
                   <SpecimenCard
                     specimen={specimen}
                     boxName={specimen.expand?.box?.name}
+                    onSaved={handleSpecimenSaved}
                   />
                 )}
               </For>
