@@ -79,8 +79,7 @@ export default function Note(props) {
     >
       <div class="flex h-full flex-col rounded-md border border-[var(--color-border-soft)] bg-[var(--color-field)] p-4">
         <div class="mb-2 flex items-center justify-between">
-          <h3 class="font-semibold">{props.snippet.pathname}</h3>
-          <Show when={!editing()}>
+            <Show when={!editing()}>
             <button type="button" class="btn" onClick={startEditing}>
               Edit
             </button>
