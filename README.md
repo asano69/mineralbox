@@ -22,8 +22,11 @@
 - Go
 - [SolidJS](https://github.com/solidjs/solid)
 - [PocketBase](https://github.com/pocketbase/pocketbase)
+- MonacoEditor
 
 ### Prior Art
 - https://deepwiki.com/snibox/snibox
 - https://deepwiki.com/MohamedElashri/snipo
 - https://deepwiki.com/jordan-dalby/ByteStash
+
+https://snipo.melashri.dev/
