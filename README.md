@@ -12,6 +12,7 @@
 - 標本を構成するファイルはSnippetとよばれ、Snippet単位でアノテーション用のページが与えられます。
 
 ![](./.github/assets/sample-01.png)
+- 標本にスニペットが1つしかなくても構いません。できるところかはらはじめましょう。
 
 ## Design
 - このアプリでもっとも重要なエンティティは、Specimenです。Specimenの構成要素としてSnippetがあり、Specimenの分類方法にBoxとTagがあります。
