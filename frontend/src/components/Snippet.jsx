@@ -53,7 +53,7 @@ export default function Snippet(props) {
             </button>
           </Show>
         </div>
-        <MonacoEditor
+<MonacoEditor
           value={
             editable.editing()
               ? editable.draft().content
@@ -66,6 +66,7 @@ export default function Snippet(props) {
           )}
           readOnly={!editable.editing()}
           highlightRange={props.highlightRange}
+          lineAnchors={props.lineAnchors}
           onChange={(v) => editable.setField("content", v)}
         />
         <Show when={editable.editing()}>

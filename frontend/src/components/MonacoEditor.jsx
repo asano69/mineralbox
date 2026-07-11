@@ -3,9 +3,10 @@
 // instance on the container div and keeps it in sync with props.value,
 // props.lang, and props.readOnly. Edits are reported back via
 // props.onChange(newValue).
-import { onMount, onCleanup, createEffect } from "solid-js";
+import { createSignal, onMount, onCleanup, createEffect } from "solid-js";
 import * as monaco from "monaco-editor";
 import "../lib/monacoWorkers";
+import { decorationsForRanges } from "../lib/lineAnchors";
 
 // Maps this app's lang select values to Monaco's language ids.
 const LANG_MAP = {
@@ -18,15 +19,38 @@ const LANG_MAP = {
 export default function MonacoEditor(props) {
   let container;
   let editor;
-  let highlightDecorations;
+  let anchorDecorations;
+
+  // Tracked as a signal (not just a local variable) because the line-anchor
+  // highlight's lightness depends on it (see lineAnchors.js), so switching
+  // color scheme mid-session needs to trigger a decoration refresh too.
+  const [dark, setDark] = createSignal(false);
+
+  // Recomputes the persistent line-anchor highlight from props.lineAnchors,
+  // dark(), and the editor's current line count. Called both reactively
+  // (below) and imperatively after any content change, since editing the
+  // code can shift how many lines exist.
+  const refreshAnchorDecorations = () => {
+    if (!editor) return;
+    const ranges = props.lineAnchors ?? [];
+    anchorDecorations.set(
+      decorationsForRanges(
+        monaco,
+        editor.getModel().getLineCount(),
+        ranges,
+        dark(),
+      ),
+    );
+  };
 
   onMount(() => {
     const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    setDark(darkQuery.matches);
 
     editor = monaco.editor.create(container, {
       value: props.value ?? "",
       language: LANG_MAP[props.lang] ?? "plaintext",
-      theme: darkQuery.matches ? "vs-dark" : "vs",
+      theme: dark() ? "vs-dark" : "vs",
       automaticLayout: true,
       minimap: { enabled: false },
       fontSize: 13,
@@ -34,16 +58,18 @@ export default function MonacoEditor(props) {
       domReadOnly: props.readOnly ?? false,
     });
 
-    highlightDecorations = editor.createDecorationsCollection();
+    anchorDecorations = editor.createDecorationsCollection();
 
     editor.onDidChangeModelContent(() => {
       const value = editor.getValue();
       if (value !== props.value) props.onChange?.(value);
+      refreshAnchorDecorations();
     });
 
     // Switch the editor's theme whenever the OS/browser color scheme
     // changes, instead of only reading it once at creation time.
     const handleThemeChange = (e) => {
+      setDark(e.matches);
       monaco.editor.setTheme(e.matches ? "vs-dark" : "vs");
     };
     darkQuery.addEventListener("change", handleThemeChange);
@@ -71,23 +97,21 @@ export default function MonacoEditor(props) {
     }
   });
 
-  // Reveals and highlights props.highlightRange ({ start, end }), e.g.
-  // after clicking a "#L32-L35" line-anchor link in Note's preview.
-  // Setting highlightRange to null clears the highlight.
+  // Always highlight every "#L23" / "#L32-L34" line-anchor mentioned in
+  // the snippet's annotation, not just the one most recently clicked, and
+  // recompute whenever the color scheme flips (light <-> dark).
   createEffect(() => {
-    if (!editor) return;
+    props.lineAnchors; // track
+    dark(); // track
+    refreshAnchorDecorations();
+  });
+
+  // Reveals (scrolls to) props.highlightRange, e.g. after clicking a
+  // line-anchor button in Note's preview. The range is already colored
+  // by the effect above, so this only needs to move the viewport.
+  createEffect(() => {
     const range = props.highlightRange;
-    if (!range) {
-      highlightDecorations.set([]);
-      return;
-    }
-    editor.revealLineInCenter(range.start);
-    highlightDecorations.set([
-      {
-        range: new monaco.Range(range.start, 1, range.end, 1),
-        options: { isWholeLine: true, className: "line-highlight" },
-      },
-    ]);
+    if (editor && range) editor.revealLineInCenter(range.start);
   });
 
   onCleanup(() => editor?.dispose());

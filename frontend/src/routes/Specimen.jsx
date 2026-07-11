@@ -1,4 +1,5 @@
 // frontend/src/routes/Specimen.jsx
+
 import { createSignal, createResource, createMemo } from "solid-js";
 import { useParams } from "@solidjs/router";
 import Logo from "../components/Logo";
@@ -7,6 +8,7 @@ import Snippet from "../components/Snippet";
 import Note from "../components/Note";
 import SpecimenInfo from "../components/SpecimenInfo";
 import pb from "../lib/pb";
+import { findLineAnchors } from "../lib/lineAnchors";
 
 // Specimen detail view: specimen info bar, then directory tree, then the
 // selected file's code, then its note, side by side. The snippet list is
@@ -63,8 +65,15 @@ export default function Specimen() {
     (specimenId) => pb.collection("specimens").getOne(specimenId),
   );
 
-  const selectedSnippet = createMemo(
+const selectedSnippet = createMemo(
     () => (snippets() ?? []).find((s) => s.id === selectedSnippetId()) ?? null,
+  );
+
+  // Every "#L23" / "#L32-L34" mentioned in the selected snippet's
+  // annotation, so MonacoEditor can keep them all highlighted, not just
+  // the one most recently clicked.
+  const lineAnchors = createMemo(() =>
+    findLineAnchors(selectedSnippet()?.annotation),
   );
 
   return (
@@ -83,9 +92,10 @@ export default function Specimen() {
           />
         </aside>
         <div class="flex-1 min-h-0">
-          <Snippet
+                  <Snippet
             snippet={selectedSnippet()}
             highlightRange={highlightRange()}
+            lineAnchors={lineAnchors()}
             onSaved={handleSnippetSaved}
           />
         </div>
