@@ -25,6 +25,13 @@ export default function Specimen() {
     }),
 );
 
+
+// Adds a newly-created snippet to the local list without re-fetching,
+// same idea as handleSnippetSaved above.
+const handleSnippetCreated = (created) => {
+  mutateSnippets((prev) => [...(prev ?? []), created]);
+};
+
 // Keeps the Directory tree in sync when Snippet/Note save a change,
 // without re-fetching the whole list from the server.
 const handleSnippetSaved = (updated) => {
@@ -51,11 +58,13 @@ const handleSnippetSaved = (updated) => {
           <NavBar />
           <SpecimenInfo specimen={specimen()} />
           <Directory
-            snippets={snippets() ?? []}
-            selectedId={selectedSnippetId()}
-            onSelect={setSelectedSnippetId}
-          />
-         
+  snippets={snippets() ?? []}
+  selectedId={selectedSnippetId()}
+  onSelect={setSelectedSnippetId}
+  specimenId={params.specimenId}
+  onCreated={handleSnippetCreated}
+/>
+            
         </aside>
         <div class="flex-1 min-h-0">
           <Snippet snippet={selectedSnippet()} onSaved={handleSnippetSaved} />

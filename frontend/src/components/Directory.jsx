@@ -1,9 +1,12 @@
 // frontend/src/components/Directory.jsx
 // Left-most pane of the Specimen view: a table-of-contents-like tree built
 // from every snippet's pathname (split on "/"). Selecting a leaf reports
-// its snippet id via props.onSelect. Purely presentational: the snippet
-// list is fetched once in Specimen.jsx and passed in as props.snippets.
+// its snippet id via props.onSelect. Purely presentational except for
+// snippet creation, which this component owns directly (same pattern as
+// Snippet.jsx/Note.jsx calling pb themselves). The snippet list is fetched
+// once in Specimen.jsx and passed in as props.snippets.
 import { createMemo, createEffect, For, Show } from "solid-js";
+import pb from "../lib/pb";
 
 function buildTree(snippets) {
   const root = { children: {} };
@@ -68,13 +71,31 @@ export default function Directory(props) {
     }
   });
 
+  // Creates a new snippet under the current specimen with only pathname
+  // set (a Unix timestamp, so it's always unique and sorts naturally
+  // alongside other pathnames). Content/annotation are left empty and
+  // filled in later via Snippet.jsx/Note.jsx's own edit flow.
+  const handleCreate = async () => {
+    const created = await pb.collection("snippets").create({
+      specimen: props.specimenId,
+      pathname: String(Date.now()),
+    });
+    props.onCreated?.(created);
+    props.onSelect(created.id);
+  };
+
   return (
-    <ul class="flex flex-col gap-1">
-      <For each={Object.values(tree().children)}>
-        {(node) => (
-          <TreeNode node={node} selectedId={props.selectedId} onSelect={props.onSelect} />
-        )}
-      </For>
-    </ul>
+    <div class="flex flex-col gap-2">
+      <button type="button" class="btn" onClick={handleCreate}>
+        New Snippet
+      </button>
+      <ul class="flex flex-col gap-1">
+        <For each={Object.values(tree().children)}>
+          {(node) => (
+            <TreeNode node={node} selectedId={props.selectedId} onSelect={props.onSelect} />
+          )}
+        </For>
+      </ul>
+    </div>
   );
 }
